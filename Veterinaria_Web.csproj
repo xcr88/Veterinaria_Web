@@ -84,6 +84,7 @@
     <Compile Include="Modelos\Propietario.cs" />
     <Compile Include="Modelos\Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositorios\MascotaRepositorio.cs" />
     <Compile Include="Repositorios\PropietarioRepositorio.cs" />
     <Compile Include="Repositorios\UsuarioRepositorio.cs" />
     <Compile Include="Utilidades\EscribirLog.cs" />
