@@ -104,6 +104,16 @@
                 Enabled="False"
                 OnClick="btnActualizar_Click" />
 
+            <%-- Confirma antes de enviar la eliminación al servidor. --%>
+            <asp:Button
+                ID="btnEliminar"
+                runat="server"
+                Text="Eliminar mascota"
+                Enabled="False"
+                CausesValidation="False"
+                OnClientClick="return confirm('¿Desea eliminar esta mascota? Esta acción no se puede deshacer.');"
+                OnClick="btnEliminar_Click" />
+
             <asp:Button
                 ID="btnNuevo"
                 runat="server"

@@ -187,7 +187,6 @@ namespace Veterinaria_Web.Vistas
                     return;
                 }
 
-                // Actualiza las opciones antes de seleccionar al dueño.
                 if (!CargarPropietarios())
                 {
                     PrepararNueva();
@@ -209,11 +208,11 @@ namespace Veterinaria_Web.Vistas
                     return;
                 }
 
+                // Conserva el ID para actualizar o eliminar.
                 ViewState["ID_MASCOTA"] = mascota.ID_MASCOTA;
 
                 txtNombre.Text = mascota.NOMBRE;
 
-                // El control Date necesita este formato.
                 txtFechaNacimiento.Text =
                     mascota.FECHA_NACIMIENTO.ToString(
                         "yyyy-MM-dd",
@@ -232,6 +231,7 @@ namespace Veterinaria_Web.Vistas
 
                 btnGuardar.Enabled = false;
                 btnActualizar.Enabled = true;
+                btnEliminar.Enabled = true;
 
                 string aviso = RegistrarEnBitacora(
                     "CONSULTAR_MASCOTA",
@@ -367,7 +367,8 @@ namespace Veterinaria_Web.Vistas
                 MascotaRepositorio repositorio =
                     new MascotaRepositorio();
 
-                bool actualizado = repositorio.Actualizar(mascota);
+                bool actualizado =
+                    repositorio.Actualizar(mascota);
 
                 if (!actualizado)
                 {
@@ -409,6 +410,66 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
+        // =====================================================
+        // ELIMINAR MASCOTA
+        // =====================================================
+
+        protected void btnEliminar_Click(
+            object sender, EventArgs e)
+        {
+            // Comprueba la selección también en el servidor.
+            if (ViewState["ID_MASCOTA"] == null)
+            {
+                MostrarMensaje(
+                    "Primero seleccione una mascota.",
+                    false);
+
+                return;
+            }
+
+            try
+            {
+                // No depende de los textos escritos en el formulario.
+                int idMascota =
+                    Convert.ToInt32(ViewState["ID_MASCOTA"]);
+
+                MascotaRepositorio repositorio =
+                    new MascotaRepositorio();
+
+                bool eliminado = repositorio.Eliminar(idMascota);
+
+                string aviso = "";
+
+                if (eliminado)
+                {
+                    aviso = RegistrarEnBitacora(
+                        "ELIMINAR_MASCOTA",
+                        "ID: " + idMascota);
+                }
+
+                PrepararNueva();
+
+                MostrarMensaje(
+                    eliminado
+                        ? "Mascota eliminada correctamente." + aviso
+                        : "No se eliminó porque la mascota ya no existe.",
+                    eliminado);
+
+                CargarMascotas();
+            }
+            catch (SqlException ex)
+            {
+                MostrarErrorSql("ELIMINAR_MASCOTA", ex);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(
+                    "ELIMINAR_MASCOTA",
+                    "No se pudo eliminar la mascota",
+                    ex);
+            }
+        }
+
         private bool ExistePropietario(int idPropietario)
         {
             PropietarioRepositorio repositorio =
@@ -418,7 +479,7 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
-        // VALIDAR Y LEER LOS DATOS DEL FORMULARIO
+        // VALIDAR Y LEER EL FORMULARIO
         // =====================================================
 
         private bool IntentarLeerMascota(out Mascota mascota)
@@ -547,6 +608,7 @@ namespace Veterinaria_Web.Vistas
 
         protected void btnNuevo_Click(object sender, EventArgs e)
         {
+            lblMensaje.Text = "";
             CargarPropietarios();
             PrepararNueva();
         }
@@ -567,8 +629,11 @@ namespace Veterinaria_Web.Vistas
                 ddlPropietario.SelectedIndex = 0;
             }
 
-            btnGuardar.Enabled = ddlPropietario.Items.Count > 1;
+            btnGuardar.Enabled =
+                ddlPropietario.Items.Count > 1;
+
             btnActualizar.Enabled = false;
+            btnEliminar.Enabled = false;
         }
 
         // =====================================================
@@ -594,13 +659,23 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
-        private void MostrarErrorSql(string accion, SqlException ex)
+        private void MostrarErrorSql(
+            string accion,
+            SqlException ex)
         {
             string aviso = RegistrarEnBitacora(
                 "ERROR_" + accion,
                 "Código SQL: " + ex.Number);
 
-            if (ex.Number == 547)
+            if (ex.Number == 547 &&
+                accion == "ELIMINAR_MASCOTA")
+            {
+                MostrarMensaje(
+                    "No se puede eliminar esta mascota " +
+                    "porque tiene hojas clínicas registradas." + aviso,
+                    false);
+            }
+            else if (ex.Number == 547)
             {
                 MostrarMensaje(
                     "Revise el propietario, el sexo y el peso. " +

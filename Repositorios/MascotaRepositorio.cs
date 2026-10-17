@@ -118,7 +118,6 @@ namespace Veterinaria_Web.Repositorios
 
                     conexion.Open();
 
-                    // El procedimiento devuelve el ID generado.
                     return Convert.ToInt32(
                         comando.ExecuteScalar());
                 }
@@ -142,7 +141,6 @@ namespace Veterinaria_Web.Repositorios
                     comando.CommandType =
                         CommandType.StoredProcedure;
 
-                    // Identifica la mascota que se modificará.
                     comando.Parameters.Add(
                         "@ID_MASCOTA",
                         SqlDbType.Int
@@ -158,6 +156,39 @@ namespace Veterinaria_Web.Repositorios
 
                     conexion.Open();
 
+                    int filasAfectadas =
+                        Convert.ToInt32(comando.ExecuteScalar());
+
+                    return filasAfectadas > 0;
+                }
+            }
+        }
+
+        // =====================================================
+        // DELETE: ELIMINAR MASCOTA
+        // =====================================================
+
+        public bool Eliminar(int idMascota)
+        {
+            using (SqlConnection conexion =
+                new SqlConnection(_cadenaConexion))
+            {
+                using (SqlCommand comando =
+                    new SqlCommand(
+                        "sp_EliminarMascota",
+                        conexion))
+                {
+                    comando.CommandType =
+                        CommandType.StoredProcedure;
+
+                    // Envía únicamente el identificador.
+                    comando.Parameters.Add(
+                        "@ID_MASCOTA",
+                        SqlDbType.Int
+                    ).Value = idMascota;
+
+                    conexion.Open();
+
                     // Lee FILAS_AFECTADAS del procedimiento.
                     int filasAfectadas =
                         Convert.ToInt32(comando.ExecuteScalar());
@@ -168,7 +199,7 @@ namespace Veterinaria_Web.Repositorios
         }
 
         // =====================================================
-        // AUXILIAR: PARÁMETROS COMUNES DE CREAR Y ACTUALIZAR
+        // AUXILIAR: PARÁMETROS COMUNES
         // =====================================================
 
         private void AgregarDatos(
@@ -202,7 +233,6 @@ namespace Veterinaria_Web.Repositorios
             parametroPeso.Scale = 2;
             parametroPeso.Value = mascota.PESO;
 
-            // Convierte las alergias no informadas en NULL.
             comando.Parameters.Add(
                 "@ALERGIAS",
                 SqlDbType.NVarChar,
