@@ -14,6 +14,7 @@ namespace Veterinaria_Web.Vistas
         {
             if (!IsPostBack)
             {
+                PrepararNuevo();
                 CargarPropietarios();
             }
         }
@@ -50,7 +51,6 @@ namespace Veterinaria_Web.Vistas
         protected void gvPropietarios_SelectedIndexChanged(
             object sender, EventArgs e)
         {
-            // Comprueba que haya una fila con su identificador.
             if (gvPropietarios.SelectedDataKey == null)
             {
                 MostrarMensaje(
@@ -62,7 +62,6 @@ namespace Veterinaria_Web.Vistas
 
             try
             {
-                // Obtiene la llave del registro, no su posición visual.
                 int idPropietario = Convert.ToInt32(
                     gvPropietarios.SelectedDataKey.Value);
 
@@ -72,7 +71,6 @@ namespace Veterinaria_Web.Vistas
                 Propietario propietario =
                     repositorio.ConsultarPorId(idPropietario);
 
-                // El registro pudo eliminarse después de cargar la lista.
                 if (propietario == null)
                 {
                     PrepararNuevo();
@@ -85,7 +83,7 @@ namespace Veterinaria_Web.Vistas
                     return;
                 }
 
-                // Conserva el ID entre las solicitudes de esta página.
+                // Conserva el identificador para la actualización.
                 ViewState["ID_PROPIETARIO"] =
                     propietario.ID_PROPIETARIO;
 
@@ -110,18 +108,21 @@ namespace Veterinaria_Web.Vistas
                 txtCorreo.Text =
                     propietario.CORREO;
 
-                // Todavía no implementamos actualizar.
-                // Evita intentar insertar nuevamente este propietario.
+                // Cambia el formulario al modo de edición.
                 btnGuardar.Enabled = false;
+                btnActualizar.Enabled = true;
 
                 MostrarMensaje(
                     "Propietario seleccionado. ID: " +
                     propietario.ID_PROPIETARIO +
-                    ". Para crear otro, pulse Nuevo propietario.",
+                    ". Modifique los datos y pulse Actualizar propietario.",
                     true);
             }
             catch (Exception ex)
             {
+                // Evita conservar una selección anterior si falla la carga.
+                PrepararNuevo();
+
                 MostrarMensaje(
                     "No se pudo cargar el propietario: " +
                     ex.Message,
@@ -143,7 +144,9 @@ namespace Veterinaria_Web.Vistas
         {
             ViewState.Remove("ID_PROPIETARIO");
             gvPropietarios.SelectedIndex = -1;
+
             btnGuardar.Enabled = true;
+            btnActualizar.Enabled = false;
 
             LimpiarCampos();
         }
@@ -155,7 +158,6 @@ namespace Veterinaria_Web.Vistas
         protected void btnGuardar_Click(
             object sender, EventArgs e)
         {
-            // Comprueba también en el servidor el modo del formulario.
             if (ViewState["ID_PROPIETARIO"] != null)
             {
                 MostrarMensaje(
@@ -172,19 +174,10 @@ namespace Veterinaria_Web.Vistas
 
             try
             {
-                Propietario propietario = new Propietario
-                {
-                    IDENTIFICACION = txtIdentificacion.Text.Trim(),
-                    PRIMER_NOMBRE = txtPrimerNombre.Text.Trim(),
-                    SEGUNDO_NOMBRE = txtSegundoNombre.Text.Trim(),
-                    PRIMER_APELLIDO = txtPrimerApellido.Text.Trim(),
-                    SEGUNDO_APELLIDO = txtSegundoApellido.Text.Trim(),
-                    TELEFONO = txtTelefono.Text.Trim(),
-                    CORREO = txtCorreo.Text.Trim(),
+                Propietario propietario = LeerFormulario();
 
-                    // Temporal hasta implementar el ingreso.
-                    ADICIONADO_POR = "Admin"
-                };
+                // Temporal hasta implementar el ingreso.
+                propietario.ADICIONADO_POR = "Admin";
 
                 PropietarioRepositorio repositorio =
                     new PropietarioRepositorio();
@@ -202,27 +195,110 @@ namespace Veterinaria_Web.Vistas
             }
             catch (SqlException ex)
             {
-                if (ex.Number == 2601 || ex.Number == 2627)
-                {
-                    MostrarMensaje(
-                        "Ya existe un propietario con esa identificación.",
-                        false);
-                }
-                else
-                {
-                    MostrarMensaje(
-                        "No se pudo guardar el propietario: " +
-                        ex.Message,
-                        false);
-                }
+                MostrarErrorSql(ex);
             }
             catch (Exception ex)
             {
                 MostrarMensaje(
-                    "No se pudo completar la operación: " +
+                    "No se pudo guardar el propietario: " +
                     ex.Message,
                     false);
             }
+        }
+
+        // =====================================================
+        // ACTUALIZAR PROPIETARIO
+        // =====================================================
+
+        protected void btnActualizar_Click(
+            object sender, EventArgs e)
+        {
+            // No permite actualizar sin un registro seleccionado.
+            if (ViewState["ID_PROPIETARIO"] == null)
+            {
+                MostrarMensaje(
+                    "Primero seleccione un propietario de la lista.",
+                    false);
+
+                return;
+            }
+
+            // Reutiliza las mismas validaciones de creación.
+            if (!ValidarDatos())
+            {
+                return;
+            }
+
+            try
+            {
+                Propietario propietario = LeerFormulario();
+
+                propietario.ID_PROPIETARIO =
+                    Convert.ToInt32(
+                        ViewState["ID_PROPIETARIO"]);
+
+                // Temporal hasta implementar el ingreso.
+                propietario.MODIFICADO_POR = "Admin";
+
+                PropietarioRepositorio repositorio =
+                    new PropietarioRepositorio();
+
+                bool actualizado =
+                    repositorio.Actualizar(propietario);
+
+                if (!actualizado)
+                {
+                    PrepararNuevo();
+                    CargarPropietarios();
+
+                    MostrarMensaje(
+                        "No se actualizó el registro porque ya no existe.",
+                        false);
+
+                    return;
+                }
+
+                int idActualizado = propietario.ID_PROPIETARIO;
+
+                PrepararNuevo();
+
+                MostrarMensaje(
+                    "Propietario actualizado correctamente. ID: " +
+                    idActualizado,
+                    true);
+
+                CargarPropietarios();
+            }
+            catch (SqlException ex)
+            {
+                MostrarErrorSql(ex);
+            }
+            catch (Exception ex)
+            {
+                MostrarMensaje(
+                    "No se pudo actualizar el propietario: " +
+                    ex.Message,
+                    false);
+            }
+        }
+
+        // =====================================================
+        // LEER LOS DATOS DEL FORMULARIO
+        // =====================================================
+
+        private Propietario LeerFormulario()
+        {
+            // Se utiliza tanto para crear como para actualizar.
+            return new Propietario
+            {
+                IDENTIFICACION = txtIdentificacion.Text.Trim(),
+                PRIMER_NOMBRE = txtPrimerNombre.Text.Trim(),
+                SEGUNDO_NOMBRE = txtSegundoNombre.Text.Trim(),
+                PRIMER_APELLIDO = txtPrimerApellido.Text.Trim(),
+                SEGUNDO_APELLIDO = txtSegundoApellido.Text.Trim(),
+                TELEFONO = txtTelefono.Text.Trim(),
+                CORREO = txtCorreo.Text.Trim()
+            };
         }
 
         // =====================================================
@@ -296,7 +372,7 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
-        // LIMPIAR CAMPOS Y MOSTRAR MENSAJES
+        // LIMPIAR CAMPOS
         // =====================================================
 
         private void LimpiarCampos()
@@ -308,6 +384,27 @@ namespace Veterinaria_Web.Vistas
             txtSegundoApellido.Text = "";
             txtTelefono.Text = "";
             txtCorreo.Text = "";
+        }
+
+        // =====================================================
+        // MOSTRAR MENSAJES Y ERRORES
+        // =====================================================
+
+        private void MostrarErrorSql(SqlException ex)
+        {
+            if (ex.Number == 2601 || ex.Number == 2627)
+            {
+                MostrarMensaje(
+                    "Ya existe un propietario con esa identificación.",
+                    false);
+            }
+            else
+            {
+                MostrarMensaje(
+                    "No se pudo completar la operación: " +
+                    ex.Message,
+                    false);
+            }
         }
 
         private void MostrarMensaje(string mensaje, bool correcto)

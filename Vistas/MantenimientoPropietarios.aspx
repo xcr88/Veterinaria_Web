@@ -93,14 +93,22 @@
                 MaxLength="150" />
             <br /><br />
 
-            <%-- Crea un propietario nuevo. --%>
+            <%-- Disponible cuando se prepara un registro nuevo. --%>
             <asp:Button
                 ID="btnGuardar"
                 runat="server"
                 Text="Guardar propietario"
                 OnClick="btnGuardar_Click" />
 
-            <%-- Limpia la selección y prepara otro registro. --%>
+            <%-- Se habilita al seleccionar un propietario. --%>
+            <asp:Button
+                ID="btnActualizar"
+                runat="server"
+                Text="Actualizar propietario"
+                Enabled="False"
+                OnClick="btnActualizar_Click" />
+
+            <%-- Limpia el formulario y cancela la selección. --%>
             <asp:Button
                 ID="btnNuevo"
                 runat="server"
@@ -118,7 +126,6 @@
 
             <h2>Propietarios registrados</h2>
 
-            <%-- El evento carga los datos de la fila seleccionada. --%>
             <asp:GridView
                 ID="gvPropietarios"
                 runat="server"
