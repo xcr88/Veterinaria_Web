@@ -71,6 +71,7 @@
     <Content Include="Global.asax" />
     <Content Include="Vistas\CerrarSesion.aspx" />
     <Content Include="Vistas\Ingreso.aspx" />
+    <Content Include="Vistas\MantenimientoHojasClinicas.aspx" />
     <Content Include="Vistas\MantenimientoMascotas.aspx" />
     <Content Include="Vistas\PruebaLog.aspx" />
     <Content Include="Vistas\MantenimientoPropietarios.aspx" />
@@ -104,6 +105,13 @@
     </Compile>
     <Compile Include="Vistas\Ingreso.aspx.designer.cs">
       <DependentUpon>Ingreso.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Vistas\MantenimientoHojasClinicas.aspx.cs">
+      <DependentUpon>MantenimientoHojasClinicas.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Vistas\MantenimientoHojasClinicas.aspx.designer.cs">
+      <DependentUpon>MantenimientoHojasClinicas.aspx</DependentUpon>
     </Compile>
     <Compile Include="Vistas\MantenimientoMascotas.aspx.cs">
       <DependentUpon>MantenimientoMascotas.aspx</DependentUpon>
