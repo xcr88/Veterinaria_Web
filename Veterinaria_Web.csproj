@@ -69,6 +69,7 @@
   <ItemGroup>
     <Content Include="BD\BD_MANT_VETERINARIA.sql" />
     <Content Include="Global.asax" />
+    <Content Include="Vistas\PruebaConexion.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -77,6 +78,14 @@
     </Compile>
     <Compile Include="Modelos\Propietario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositorios\PropietarioRepositorio.cs" />
+    <Compile Include="Vistas\PruebaConexion.aspx.cs">
+      <DependentUpon>PruebaConexion.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Vistas\PruebaConexion.aspx.designer.cs">
+      <DependentUpon>PruebaConexion.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -89,8 +98,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Repositorios\" />
-    <Folder Include="Vistas\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
