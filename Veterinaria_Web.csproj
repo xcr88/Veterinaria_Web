@@ -69,6 +69,7 @@
   <ItemGroup>
     <Content Include="BD\BD_MANT_VETERINARIA.sql" />
     <Content Include="Global.asax" />
+    <Content Include="Vistas\Ingreso.aspx" />
     <Content Include="Vistas\PruebaLog.aspx" />
     <Content Include="Vistas\MantenimientoPropietarios.aspx" />
     <Content Include="Vistas\PruebaConexion.aspx" />
@@ -84,6 +85,13 @@
     <Compile Include="Repositorios\PropietarioRepositorio.cs" />
     <Compile Include="Repositorios\UsuarioRepositorio.cs" />
     <Compile Include="Utilidades\EscribirLog.cs" />
+    <Compile Include="Vistas\Ingreso.aspx.cs">
+      <DependentUpon>Ingreso.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Vistas\Ingreso.aspx.designer.cs">
+      <DependentUpon>Ingreso.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Vistas\PruebaLog.aspx.cs">
       <DependentUpon>PruebaLog.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
