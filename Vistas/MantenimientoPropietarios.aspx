@@ -7,181 +7,236 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta charset="utf-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1" />
+
     <title>Mantenimiento de propietarios</title>
+
+    <link href="~/Estilos/Estilos.css"
+        rel="stylesheet"
+        runat="server" />
 </head>
 <body>
     <form id="form1" runat="server">
-        <div>
-            <h1>Mantenimiento de propietarios</h1>
+        <div class="pagina">
 
-            <asp:HyperLink
-                ID="lnkMascotas"
+            <header class="encabezado">
+                <h1>Mantenimiento de propietarios</h1>
+
+                <p>Registro y administración de propietarios de mascotas.</p>
+
+                <br />
+
+                <nav class="acciones" aria-label="Navegación principal">
+                    <asp:HyperLink
+                        ID="lnkMascotas"
+                        runat="server"
+                        CssClass="boton boton-secundario"
+                        Text="Ir a mascotas"
+                        NavigateUrl="~/Vistas/MantenimientoMascotas.aspx" />
+
+                    <asp:HyperLink
+                        ID="lnkHojasClinicas"
+                        runat="server"
+                        CssClass="boton boton-secundario"
+                        Text="Ir a hojas clínicas"
+                        NavigateUrl="~/Vistas/MantenimientoHojasClinicas.aspx" />
+
+                    <asp:HyperLink
+                        ID="lnkCerrarSesion"
+                        runat="server"
+                        CssClass="boton boton-editar"
+                        Text="Cerrar sesión"
+                        NavigateUrl="~/Vistas/CerrarSesion.aspx" />
+                </nav>
+            </header>
+
+            <asp:Label
+                ID="lblMensaje"
                 runat="server"
-                Text="Ir a mascotas"
-                NavigateUrl="~/Vistas/MantenimientoMascotas.aspx" />
+                CssClass="mensaje"
+                role="status"
+                aria-live="polite" />
 
-            &nbsp;|&nbsp;
+            <main class="contenedor">
 
-            <asp:HyperLink
-                ID="lnkHojasClinicas"
-                runat="server"
-                Text="Ir a hojas clínicas"
-                NavigateUrl="~/Vistas/MantenimientoHojasClinicas.aspx" />
+                <section class="tarjeta formulario">
+                    <h2>Datos del propietario</h2>
 
-            &nbsp;|&nbsp;
+                    <asp:Label
+                        runat="server"
+                        AssociatedControlID="txtIdentificacion"
+                        Text="Identificación:" />
 
-            <asp:HyperLink
-                ID="lnkCerrarSesion"
-                runat="server"
-                Text="Cerrar sesión"
-                NavigateUrl="~/Vistas/CerrarSesion.aspx" />
+                    <asp:TextBox
+                        ID="txtIdentificacion"
+                        runat="server"
+                        CssClass="entrada"
+                        MaxLength="15" />
 
-            <br /><br />
+                    <asp:Label
+                        runat="server"
+                        AssociatedControlID="txtPrimerNombre"
+                        Text="Primer nombre:" />
 
-            <h2>Datos del propietario</h2>
+                    <asp:TextBox
+                        ID="txtPrimerNombre"
+                        runat="server"
+                        CssClass="entrada"
+                        MaxLength="25" />
 
-            <asp:Label runat="server"
-                AssociatedControlID="txtIdentificacion"
-                Text="Identificación:" />
-            <br />
-            <asp:TextBox ID="txtIdentificacion"
-                runat="server" MaxLength="15" />
-            <br /><br />
+                    <asp:Label
+                        runat="server"
+                        AssociatedControlID="txtSegundoNombre"
+                        Text="Segundo nombre (opcional):" />
 
-            <asp:Label runat="server"
-                AssociatedControlID="txtPrimerNombre"
-                Text="Primer nombre:" />
-            <br />
-            <asp:TextBox ID="txtPrimerNombre"
-                runat="server" MaxLength="25" />
-            <br /><br />
+                    <asp:TextBox
+                        ID="txtSegundoNombre"
+                        runat="server"
+                        CssClass="entrada"
+                        MaxLength="25" />
 
-            <asp:Label runat="server"
-                AssociatedControlID="txtSegundoNombre"
-                Text="Segundo nombre (opcional):" />
-            <br />
-            <asp:TextBox ID="txtSegundoNombre"
-                runat="server" MaxLength="25" />
-            <br /><br />
+                    <asp:Label
+                        runat="server"
+                        AssociatedControlID="txtPrimerApellido"
+                        Text="Primer apellido:" />
 
-            <asp:Label runat="server"
-                AssociatedControlID="txtPrimerApellido"
-                Text="Primer apellido:" />
-            <br />
-            <asp:TextBox ID="txtPrimerApellido"
-                runat="server" MaxLength="25" />
-            <br /><br />
+                    <asp:TextBox
+                        ID="txtPrimerApellido"
+                        runat="server"
+                        CssClass="entrada"
+                        MaxLength="25" />
 
-            <asp:Label runat="server"
-                AssociatedControlID="txtSegundoApellido"
-                Text="Segundo apellido (opcional):" />
-            <br />
-            <asp:TextBox ID="txtSegundoApellido"
-                runat="server" MaxLength="25" />
-            <br /><br />
+                    <asp:Label
+                        runat="server"
+                        AssociatedControlID="txtSegundoApellido"
+                        Text="Segundo apellido (opcional):" />
 
-            <asp:Label runat="server"
-                AssociatedControlID="txtTelefono"
-                Text="Teléfono:" />
-            <br />
-            <asp:TextBox ID="txtTelefono"
-                runat="server" MaxLength="8" />
-            <br /><br />
+                    <asp:TextBox
+                        ID="txtSegundoApellido"
+                        runat="server"
+                        CssClass="entrada"
+                        MaxLength="25" />
 
-            <asp:Label runat="server"
-                AssociatedControlID="txtCorreo"
-                Text="Correo electrónico:" />
-            <br />
-            <asp:TextBox ID="txtCorreo"
-                runat="server" MaxLength="150" />
-            <br /><br />
+                    <asp:Label
+                        runat="server"
+                        AssociatedControlID="txtTelefono"
+                        Text="Teléfono:" />
 
-            <asp:Button
-                ID="btnGuardar"
-                runat="server"
-                Text="Guardar propietario"
-                OnClick="btnGuardar_Click" />
+                    <asp:TextBox
+                        ID="txtTelefono"
+                        runat="server"
+                        CssClass="entrada"
+                        MaxLength="8"
+                        inputmode="numeric" />
 
-            <asp:Button
-                ID="btnActualizar"
-                runat="server"
-                Text="Actualizar propietario"
-                Enabled="False"
-                OnClick="btnActualizar_Click" />
+                    <asp:Label
+                        runat="server"
+                        AssociatedControlID="txtCorreo"
+                        Text="Correo electrónico:" />
 
-            <asp:Button
-                ID="btnEliminar"
-                runat="server"
-                Text="Eliminar propietario"
-                Enabled="False"
-                CausesValidation="False"
-                OnClientClick="return confirm('¿Desea eliminar este propietario? Esta acción no se puede deshacer.');"
-                OnClick="btnEliminar_Click" />
+                    <asp:TextBox
+                        ID="txtCorreo"
+                        runat="server"
+                        CssClass="entrada"
+                        MaxLength="150" />
 
-            <asp:Button
-                ID="btnNuevo"
-                runat="server"
-                Text="Nuevo propietario"
-                CausesValidation="False"
-                OnClick="btnNuevo_Click" />
+                    <div class="acciones">
+                        <asp:Button
+                            ID="btnGuardar"
+                            runat="server"
+                            CssClass="boton boton-primario"
+                            Text="Guardar propietario"
+                            OnClick="btnGuardar_Click" />
 
-            <br /><br />
+                        <asp:Button
+                            ID="btnActualizar"
+                            runat="server"
+                            CssClass="boton boton-editar"
+                            Text="Actualizar propietario"
+                            Enabled="False"
+                            OnClick="btnActualizar_Click" />
 
-            <asp:Label ID="lblMensaje" runat="server" />
+                        <asp:Button
+                            ID="btnEliminar"
+                            runat="server"
+                            CssClass="boton boton-peligro"
+                            Text="Eliminar propietario"
+                            Enabled="False"
+                            CausesValidation="False"
+                            OnClientClick="return confirm('¿Desea eliminar este propietario? Esta acción no se puede deshacer.');"
+                            OnClick="btnEliminar_Click" />
 
-            <hr />
+                        <asp:Button
+                            ID="btnNuevo"
+                            runat="server"
+                            CssClass="boton boton-secundario"
+                            Text="Nuevo propietario"
+                            CausesValidation="False"
+                            OnClick="btnNuevo_Click" />
+                    </div>
+                </section>
 
-            <h2>Propietarios registrados</h2>
+                <section class="tarjeta listado">
+                    <h2>Propietarios registrados</h2>
 
-            <asp:GridView
-                ID="gvPropietarios"
-                runat="server"
-                AutoGenerateColumns="False"
-                DataKeyNames="ID_PROPIETARIO"
-                EmptyDataText="No hay propietarios registrados."
-                OnSelectedIndexChanged="gvPropietarios_SelectedIndexChanged">
+                    <div class="tabla-contenedor">
+                        <asp:GridView
+                            ID="gvPropietarios"
+                            runat="server"
+                            CssClass="tabla"
+                            GridLines="None"
+                            AutoGenerateColumns="False"
+                            DataKeyNames="ID_PROPIETARIO"
+                            EmptyDataText="No hay propietarios registrados."
+                            OnSelectedIndexChanged="gvPropietarios_SelectedIndexChanged">
 
-                <SelectedRowStyle BackColor="LightYellow" />
+                            <SelectedRowStyle BackColor="#F6E2B3" />
 
-                <Columns>
-                    <asp:CommandField
-                        ShowSelectButton="True"
-                        SelectText="Seleccionar"
-                        CausesValidation="False" />
+                            <Columns>
+                                <asp:CommandField
+                                    ShowSelectButton="True"
+                                    SelectText="Seleccionar"
+                                    CausesValidation="False"
+                                    ControlStyle-CssClass="boton boton-secundario" />
 
-                    <asp:BoundField
-                        DataField="ID_PROPIETARIO"
-                        HeaderText="ID" />
+                                <asp:BoundField
+                                    DataField="ID_PROPIETARIO"
+                                    HeaderText="ID" />
 
-                    <asp:BoundField
-                        DataField="IDENTIFICACION"
-                        HeaderText="Identificación" />
+                                <asp:BoundField
+                                    DataField="IDENTIFICACION"
+                                    HeaderText="Identificación" />
 
-                    <asp:BoundField
-                        DataField="PRIMER_NOMBRE"
-                        HeaderText="Primer nombre" />
+                                <asp:BoundField
+                                    DataField="PRIMER_NOMBRE"
+                                    HeaderText="Primer nombre" />
 
-                    <asp:BoundField
-                        DataField="SEGUNDO_NOMBRE"
-                        HeaderText="Segundo nombre" />
+                                <asp:BoundField
+                                    DataField="SEGUNDO_NOMBRE"
+                                    HeaderText="Segundo nombre" />
 
-                    <asp:BoundField
-                        DataField="PRIMER_APELLIDO"
-                        HeaderText="Primer apellido" />
+                                <asp:BoundField
+                                    DataField="PRIMER_APELLIDO"
+                                    HeaderText="Primer apellido" />
 
-                    <asp:BoundField
-                        DataField="SEGUNDO_APELLIDO"
-                        HeaderText="Segundo apellido" />
+                                <asp:BoundField
+                                    DataField="SEGUNDO_APELLIDO"
+                                    HeaderText="Segundo apellido" />
 
-                    <asp:BoundField
-                        DataField="TELEFONO"
-                        HeaderText="Teléfono" />
+                                <asp:BoundField
+                                    DataField="TELEFONO"
+                                    HeaderText="Teléfono" />
 
-                    <asp:BoundField
-                        DataField="CORREO"
-                        HeaderText="Correo electrónico" />
-                </Columns>
-            </asp:GridView>
+                                <asp:BoundField
+                                    DataField="CORREO"
+                                    HeaderText="Correo electrónico" />
+                            </Columns>
+                        </asp:GridView>
+                    </div>
+                </section>
+
+            </main>
         </div>
     </form>
 </body>

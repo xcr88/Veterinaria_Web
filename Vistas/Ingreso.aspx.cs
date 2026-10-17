@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.Web;
 using Veterinaria_Web.Modelos;
 using Veterinaria_Web.Repositorios;
 using Veterinaria_Web.Utilidades;
@@ -8,8 +9,30 @@ namespace Veterinaria_Web.Vistas
 {
     public partial class Ingreso : System.Web.UI.Page
     {
+        private bool TieneSesionActiva()
+        {
+            return Session["ID_USUARIO"] != null &&
+                !string.IsNullOrWhiteSpace(
+                    Convert.ToString(Session["Usuario"]));
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
+            Response.Cache.SetCacheability(
+                HttpCacheability.NoCache);
+
+            Response.Cache.SetNoStore();
+
+            Response.Cache.SetExpires(
+                DateTime.UtcNow.AddMinutes(-1));
+
+            // Si ya ingresó, abre el mantenimiento.
+            if (TieneSesionActiva())
+            {
+                AbrirMantenimiento();
+                return;
+            }
+
             if (!IsPostBack &&
                 Request.QueryString["aviso"] == "log")
             {
@@ -20,23 +43,28 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
-        // =====================================================
-        // VALIDAR EL INGRESO
-        // =====================================================
-
         protected void btnIngresar_Click(
-            object sender, EventArgs e)
+            object sender,
+            EventArgs e)
         {
+            // También protege frente al envío de una pestaña
+            // de ingreso que quedó abierta anteriormente.
+            if (TieneSesionActiva())
+            {
+                AbrirMantenimiento();
+                return;
+            }
+
             lblMensaje.Text = "";
             lnkContinuar.Visible = false;
 
-            // Cada intento comienza sin una cuenta seleccionada.
+            // Solo descarta datos incompletos de una sesión inválida.
             Session.Remove("ID_USUARIO");
             Session.Remove("Usuario");
 
             string usuario = txtUsuario.Text.Trim();
 
-            // No quitamos espacios ni cambiamos la contraseña.
+            // La contraseña se valida exactamente como fue escrita.
             string clave = txtClave.Text;
 
             if (string.IsNullOrWhiteSpace(usuario) ||
@@ -49,8 +77,6 @@ namespace Veterinaria_Web.Vistas
                 return;
             }
 
-            // Valida también en el servidor para evitar
-            // enviar valores mayores que los parámetros SQL.
             if (usuario.Length > 50 || clave.Length > 10)
             {
                 MostrarMensaje(
@@ -87,8 +113,7 @@ namespace Veterinaria_Web.Vistas
                     return;
                 }
 
-                // Conserva únicamente los datos necesarios.
-                // La contraseña no se guarda en la sesión.
+                // No se guarda la contraseña en la sesión.
                 Session["ID_USUARIO"] = cuenta.ID_USUARIO;
                 Session["Usuario"] = cuenta.USUARIO;
 
@@ -99,7 +124,6 @@ namespace Veterinaria_Web.Vistas
 
                 if (!registrado)
                 {
-                    // El acceso fue válido aunque fallara el archivo.
                     MostrarMensaje(
                         "Ingreso correcto, pero no se pudo escribir " +
                         "en la bitácora. Puede continuar con el enlace.",
@@ -109,12 +133,7 @@ namespace Veterinaria_Web.Vistas
                     return;
                 }
 
-                // Abre el mantenimiento después del ingreso.
-                Response.Redirect(
-                    "~/Vistas/MantenimientoPropietarios.aspx",
-                    false);
-
-                Context.ApplicationInstance.CompleteRequest();
+                AbrirMantenimiento();
                 return;
             }
             catch (SqlException ex)
@@ -148,9 +167,14 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
-        // =====================================================
-        // REGISTRAR ACCESOS Y ERRORES
-        // =====================================================
+        private void AbrirMantenimiento()
+        {
+            Response.Redirect(
+                "~/Vistas/MantenimientoPropietarios.aspx",
+                false);
+
+            Context.ApplicationInstance.CompleteRequest();
+        }
 
         private bool RegistrarEnBitacora(
             string usuario,
@@ -159,12 +183,15 @@ namespace Veterinaria_Web.Vistas
         {
             try
             {
-                EscribirLog.Registrar(usuario, accion, detalle);
+                EscribirLog.Registrar(
+                    usuario,
+                    accion,
+                    detalle);
+
                 return true;
             }
             catch (Exception ex)
             {
-                // No vuelve a intentar escribir en el mismo archivo.
                 System.Diagnostics.Trace.TraceWarning(
                     "No se pudo escribir el LOG de ingreso. Tipo: " +
                     ex.GetType().Name);
@@ -173,11 +200,9 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
-        // =====================================================
-        // MOSTRAR MENSAJES
-        // =====================================================
-
-        private void MostrarMensaje(string mensaje, bool correcto)
+        private void MostrarMensaje(
+            string mensaje,
+            bool correcto)
         {
             lblMensaje.Text = Server.HtmlEncode(mensaje);
 

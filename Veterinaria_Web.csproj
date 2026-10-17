@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="BD\BD_MANT_VETERINARIA.sql" />
+    <Content Include="Estilos\Estilos.css" />
     <Content Include="Global.asax" />
     <Content Include="Vistas\CerrarSesion.aspx" />
     <Content Include="Vistas\Ingreso.aspx" />

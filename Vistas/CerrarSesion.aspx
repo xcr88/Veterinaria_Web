@@ -7,31 +7,74 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta charset="utf-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1" />
+
     <title>Cerrar sesión - Veterinaria</title>
+
+    <link href="~/Estilos/Estilos.css"
+        rel="stylesheet"
+        runat="server" />
+
+    <style>
+        .pagina-salida {
+            max-width: 560px;
+            margin: 40px auto;
+        }
+
+        .pagina-salida .encabezado h1 {
+            font-size: 30px;
+        }
+
+        .pagina-salida .acciones {
+            margin-top: 24px;
+        }
+
+        @media (max-width: 600px) {
+            .pagina-salida {
+                margin: 12px auto;
+            }
+        }
+    </style>
 </head>
 <body>
     <form id="form1" runat="server">
-        <div>
-            <h1>Cerrar sesión</h1>
+        <main class="pagina pagina-salida">
 
-            <asp:Label
-                ID="lblUsuario"
-                runat="server" />
+            <header class="encabezado">
+                <h1>Veterinaria</h1>
+                <p>Cierre de sesión</p>
+            </header>
 
-            <p>¿Desea salir del sistema?</p>
+            <section class="tarjeta">
+                <h2>Cerrar sesión</h2>
 
-            <asp:Button
-                ID="btnCerrarSesion"
-                runat="server"
-                Text="Sí, cerrar sesión"
-                OnClick="btnCerrarSesion_Click" />
+                <p>
+                    <asp:Label
+                        ID="lblUsuario"
+                        runat="server" />
+                </p>
 
-            <asp:HyperLink
-                ID="lnkCancelar"
-                runat="server"
-                Text="Cancelar y regresar"
-                NavigateUrl="~/Vistas/MantenimientoPropietarios.aspx" />
-        </div>
+                <p>¿Desea salir del sistema?</p>
+
+                <div class="acciones">
+                    <asp:Button
+                        ID="btnCerrarSesion"
+                        runat="server"
+                        CssClass="boton boton-peligro"
+                        Text="Sí, cerrar sesión"
+                        OnClick="btnCerrarSesion_Click" />
+
+                    <asp:HyperLink
+                        ID="lnkCancelar"
+                        runat="server"
+                        CssClass="boton boton-secundario"
+                        Text="Cancelar y regresar"
+                        NavigateUrl="~/Vistas/MantenimientoPropietarios.aspx" />
+                </div>
+            </section>
+
+        </main>
     </form>
 </body>
 </html>
