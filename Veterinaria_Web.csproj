@@ -69,6 +69,7 @@
   <ItemGroup>
     <Content Include="BD\BD_MANT_VETERINARIA.sql" />
     <Content Include="Global.asax" />
+    <Content Include="Vistas\CerrarSesion.aspx" />
     <Content Include="Vistas\Ingreso.aspx" />
     <Content Include="Vistas\PruebaLog.aspx" />
     <Content Include="Vistas\MantenimientoPropietarios.aspx" />
@@ -85,6 +86,13 @@
     <Compile Include="Repositorios\PropietarioRepositorio.cs" />
     <Compile Include="Repositorios\UsuarioRepositorio.cs" />
     <Compile Include="Utilidades\EscribirLog.cs" />
+    <Compile Include="Vistas\CerrarSesion.aspx.cs">
+      <DependentUpon>CerrarSesion.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Vistas\CerrarSesion.aspx.designer.cs">
+      <DependentUpon>CerrarSesion.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Vistas\Ingreso.aspx.cs">
       <DependentUpon>Ingreso.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

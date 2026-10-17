@@ -10,7 +10,14 @@ namespace Veterinaria_Web.Vistas
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            if (!IsPostBack &&
+                Request.QueryString["aviso"] == "log")
+            {
+                MostrarMensaje(
+                    "La sesión se cerró, pero no se pudo registrar " +
+                    "la salida en la bitácora.",
+                    false);
+            }
         }
 
         // =====================================================

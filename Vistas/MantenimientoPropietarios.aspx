@@ -14,6 +14,15 @@
         <div>
             <h1>Mantenimiento de propietarios</h1>
 
+            <%-- Abre la página para confirmar la salida. --%>
+            <asp:HyperLink
+                ID="lnkCerrarSesion"
+                runat="server"
+                Text="Cerrar sesión"
+                NavigateUrl="~/Vistas/CerrarSesion.aspx" />
+
+            <br /><br />
+
             <h2>Datos del propietario</h2>
 
             <asp:Label runat="server"
@@ -85,7 +94,7 @@
                 Enabled="False"
                 OnClick="btnActualizar_Click" />
 
-            <%-- Solicita confirmación antes de enviar la eliminación. --%>
+            <%-- Solicita confirmación antes de eliminar. --%>
             <asp:Button
                 ID="btnEliminar"
                 runat="server"
