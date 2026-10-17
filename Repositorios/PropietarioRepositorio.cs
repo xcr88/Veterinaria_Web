@@ -51,7 +51,6 @@ namespace Veterinaria_Web.Repositorios
                         "sp_ConsultarPropietarios",
                         conexion))
                 {
-                    // Indica que ejecutaremos un procedimiento.
                     comando.CommandType =
                         CommandType.StoredProcedure;
 
@@ -123,7 +122,6 @@ namespace Veterinaria_Web.Repositorios
                                                 lector["MODIFICADO_POR"])
                                 };
 
-                            // Agrega el propietario a la lista.
                             lista.Add(propietario);
                         }
                     }
@@ -131,6 +129,91 @@ namespace Veterinaria_Web.Repositorios
             }
 
             return lista;
+        }
+
+        // =====================================================
+        // CREATE: CREAR PROPIETARIO
+        // =====================================================
+
+        public int Crear(Propietario propietario)
+        {
+            using (SqlConnection conexion =
+                new SqlConnection(_cadenaConexion))
+            {
+                using (SqlCommand comando =
+                    new SqlCommand(
+                        "sp_CrearPropietario",
+                        conexion))
+                {
+                    comando.CommandType =
+                        CommandType.StoredProcedure;
+
+                    comando.Parameters.Add(
+                        "@IDENTIFICACION",
+                        SqlDbType.NVarChar,
+                        15
+                    ).Value = propietario.IDENTIFICACION;
+
+                    comando.Parameters.Add(
+                        "@PRIMER_NOMBRE",
+                        SqlDbType.NVarChar,
+                        25
+                    ).Value = propietario.PRIMER_NOMBRE;
+
+                    // Convierte el texto opcional vacío en NULL.
+                    comando.Parameters.Add(
+                        "@SEGUNDO_NOMBRE",
+                        SqlDbType.NVarChar,
+                        25
+                    ).Value =
+                        string.IsNullOrWhiteSpace(
+                            propietario.SEGUNDO_NOMBRE)
+                            ? (object)DBNull.Value
+                            : propietario.SEGUNDO_NOMBRE;
+
+                    comando.Parameters.Add(
+                        "@PRIMER_APELLIDO",
+                        SqlDbType.NVarChar,
+                        25
+                    ).Value = propietario.PRIMER_APELLIDO;
+
+                    // Convierte el texto opcional vacío en NULL.
+                    comando.Parameters.Add(
+                        "@SEGUNDO_APELLIDO",
+                        SqlDbType.NVarChar,
+                        25
+                    ).Value =
+                        string.IsNullOrWhiteSpace(
+                            propietario.SEGUNDO_APELLIDO)
+                            ? (object)DBNull.Value
+                            : propietario.SEGUNDO_APELLIDO;
+
+                    comando.Parameters.Add(
+                        "@TELEFONO",
+                        SqlDbType.NVarChar,
+                        8
+                    ).Value = propietario.TELEFONO;
+
+                    comando.Parameters.Add(
+                        "@CORREO",
+                        SqlDbType.NVarChar,
+                        150
+                    ).Value = propietario.CORREO;
+
+                    comando.Parameters.Add(
+                        "@ADICIONADO_POR",
+                        SqlDbType.NVarChar,
+                        50
+                    ).Value = propietario.ADICIONADO_POR;
+
+                    conexion.Open();
+
+                    // Obtiene el ID devuelto por el procedimiento.
+                    object resultado = comando.ExecuteScalar();
+
+                    return Convert.ToInt32(resultado);
+                }
+            }
         }
     }
 }

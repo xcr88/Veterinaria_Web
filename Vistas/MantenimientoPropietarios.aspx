@@ -14,14 +14,104 @@
         <div>
             <h1>Mantenimiento de propietarios</h1>
 
-            <%-- Muestra mensajes sobre la consulta. --%>
+            <%-- Campos para registrar un propietario. --%>
+            <h2>Agregar propietario</h2>
+
+            <asp:Label
+                runat="server"
+                AssociatedControlID="txtIdentificacion"
+                Text="Identificación:" />
+            <br />
+            <asp:TextBox
+                ID="txtIdentificacion"
+                runat="server"
+                MaxLength="15" />
+            <br /><br />
+
+            <asp:Label
+                runat="server"
+                AssociatedControlID="txtPrimerNombre"
+                Text="Primer nombre:" />
+            <br />
+            <asp:TextBox
+                ID="txtPrimerNombre"
+                runat="server"
+                MaxLength="25" />
+            <br /><br />
+
+            <asp:Label
+                runat="server"
+                AssociatedControlID="txtSegundoNombre"
+                Text="Segundo nombre (opcional):" />
+            <br />
+            <asp:TextBox
+                ID="txtSegundoNombre"
+                runat="server"
+                MaxLength="25" />
+            <br /><br />
+
+            <asp:Label
+                runat="server"
+                AssociatedControlID="txtPrimerApellido"
+                Text="Primer apellido:" />
+            <br />
+            <asp:TextBox
+                ID="txtPrimerApellido"
+                runat="server"
+                MaxLength="25" />
+            <br /><br />
+
+            <asp:Label
+                runat="server"
+                AssociatedControlID="txtSegundoApellido"
+                Text="Segundo apellido (opcional):" />
+            <br />
+            <asp:TextBox
+                ID="txtSegundoApellido"
+                runat="server"
+                MaxLength="25" />
+            <br /><br />
+
+            <asp:Label
+                runat="server"
+                AssociatedControlID="txtTelefono"
+                Text="Teléfono:" />
+            <br />
+            <asp:TextBox
+                ID="txtTelefono"
+                runat="server"
+                MaxLength="8" />
+            <br /><br />
+
+            <asp:Label
+                runat="server"
+                AssociatedControlID="txtCorreo"
+                Text="Correo electrónico:" />
+            <br />
+            <asp:TextBox
+                ID="txtCorreo"
+                runat="server"
+                MaxLength="150" />
+            <br /><br />
+
+            <%-- Ejecuta el método de guardado del archivo C#. --%>
+            <asp:Button
+                ID="btnGuardar"
+                runat="server"
+                Text="Guardar propietario"
+                OnClick="btnGuardar_Click" />
+
+            <br /><br />
+
+            <%-- Muestra el resultado del guardado o la consulta. --%>
             <asp:Label
                 ID="lblMensaje"
                 runat="server" />
 
-            <br /><br />
+            <hr />
 
-            <%-- Define las columnas de la lista de propietarios. --%>
+            <h2>Propietarios registrados</h2>
+
             <asp:GridView
                 ID="gvPropietarios"
                 runat="server"
