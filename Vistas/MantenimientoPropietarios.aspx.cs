@@ -4,6 +4,7 @@ using System.Net.Mail;
 using System.Text.RegularExpressions;
 using Veterinaria_Web.Modelos;
 using Veterinaria_Web.Repositorios;
+using Veterinaria_Web.Utilidades;
 
 namespace Veterinaria_Web.Vistas
 {
@@ -37,10 +38,10 @@ namespace Veterinaria_Web.Vistas
             }
             catch (Exception ex)
             {
-                MostrarMensaje(
-                    "No se pudieron consultar los propietarios: " +
-                    ex.Message,
-                    false);
+                MostrarError(
+                    "CONSULTAR_PROPIETARIOS",
+                    "No se pudieron consultar los propietarios",
+                    ex);
             }
         }
 
@@ -83,7 +84,6 @@ namespace Veterinaria_Web.Vistas
                     return;
                 }
 
-                // Guarda el ID para actualizar o eliminar.
                 ViewState["ID_PROPIETARIO"] =
                     propietario.ID_PROPIETARIO;
 
@@ -112,19 +112,23 @@ namespace Veterinaria_Web.Vistas
                 btnActualizar.Enabled = true;
                 btnEliminar.Enabled = true;
 
+                string aviso = RegistrarEnBitacora(
+                    "CONSULTAR_PROPIETARIO",
+                    "ID: " + propietario.ID_PROPIETARIO);
+
                 MostrarMensaje(
                     "Propietario seleccionado. ID: " +
-                    propietario.ID_PROPIETARIO,
+                    propietario.ID_PROPIETARIO + aviso,
                     true);
             }
             catch (Exception ex)
             {
                 PrepararNuevo();
 
-                MostrarMensaje(
-                    "No se pudo cargar el propietario: " +
-                    ex.Message,
-                    false);
+                MostrarError(
+                    "CONSULTAR_PROPIETARIO",
+                    "No se pudo cargar el propietario",
+                    ex);
             }
         }
 
@@ -183,25 +187,30 @@ namespace Veterinaria_Web.Vistas
 
                 int idGenerado = repositorio.Crear(propietario);
 
+                // Registra la creación después de confirmarla en SQL.
+                string aviso = RegistrarEnBitacora(
+                    "CREAR_PROPIETARIO",
+                    "ID: " + idGenerado);
+
                 PrepararNuevo();
 
                 MostrarMensaje(
                     "Propietario guardado correctamente. ID: " +
-                    idGenerado,
+                    idGenerado + aviso,
                     true);
 
                 CargarPropietarios();
             }
             catch (SqlException ex)
             {
-                MostrarErrorSql(ex);
+                MostrarErrorSql("CREAR_PROPIETARIO", ex);
             }
             catch (Exception ex)
             {
-                MostrarMensaje(
-                    "No se pudo guardar el propietario: " +
-                    ex.Message,
-                    false);
+                MostrarError(
+                    "CREAR_PROPIETARIO",
+                    "No se pudo guardar el propietario",
+                    ex);
             }
         }
 
@@ -255,27 +264,31 @@ namespace Veterinaria_Web.Vistas
                     return;
                 }
 
+                string aviso = RegistrarEnBitacora(
+                    "ACTUALIZAR_PROPIETARIO",
+                    "ID: " + propietario.ID_PROPIETARIO);
+
                 int idActualizado = propietario.ID_PROPIETARIO;
 
                 PrepararNuevo();
 
                 MostrarMensaje(
                     "Propietario actualizado correctamente. ID: " +
-                    idActualizado,
+                    idActualizado + aviso,
                     true);
 
                 CargarPropietarios();
             }
             catch (SqlException ex)
             {
-                MostrarErrorSql(ex);
+                MostrarErrorSql("ACTUALIZAR_PROPIETARIO", ex);
             }
             catch (Exception ex)
             {
-                MostrarMensaje(
-                    "No se pudo actualizar el propietario: " +
-                    ex.Message,
-                    false);
+                MostrarError(
+                    "ACTUALIZAR_PROPIETARIO",
+                    "No se pudo actualizar el propietario",
+                    ex);
             }
         }
 
@@ -286,7 +299,6 @@ namespace Veterinaria_Web.Vistas
         protected void btnEliminar_Click(
             object sender, EventArgs e)
         {
-            // Valida la selección también en el servidor.
             if (ViewState["ID_PROPIETARIO"] == null)
             {
                 MostrarMensaje(
@@ -298,7 +310,6 @@ namespace Veterinaria_Web.Vistas
 
             try
             {
-                // Usa el ID seleccionado, no los textos del formulario.
                 int idPropietario = Convert.ToInt32(
                     ViewState["ID_PROPIETARIO"]);
 
@@ -308,11 +319,20 @@ namespace Veterinaria_Web.Vistas
                 bool eliminado =
                     repositorio.Eliminar(idPropietario);
 
+                string aviso = "";
+
+                if (eliminado)
+                {
+                    aviso = RegistrarEnBitacora(
+                        "ELIMINAR_PROPIETARIO",
+                        "ID: " + idPropietario);
+                }
+
                 PrepararNuevo();
 
                 MostrarMensaje(
                     eliminado
-                        ? "Propietario eliminado correctamente."
+                        ? "Propietario eliminado correctamente." + aviso
                         : "No se eliminó porque el registro ya no existe.",
                     eliminado);
 
@@ -320,25 +340,14 @@ namespace Veterinaria_Web.Vistas
             }
             catch (SqlException ex)
             {
-                if (ex.Number == 547)
-                {
-                    // La llave foránea protege las mascotas relacionadas.
-                    MostrarMensaje(
-                        "No se puede eliminar este propietario " +
-                        "porque tiene mascotas registradas.",
-                        false);
-                }
-                else
-                {
-                    MostrarErrorSql(ex);
-                }
+                MostrarErrorSql("ELIMINAR_PROPIETARIO", ex);
             }
             catch (Exception ex)
             {
-                MostrarMensaje(
-                    "No se pudo eliminar el propietario: " +
-                    ex.Message,
-                    false);
+                MostrarError(
+                    "ELIMINAR_PROPIETARIO",
+                    "No se pudo eliminar el propietario",
+                    ex);
             }
         }
 
@@ -446,24 +455,76 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
-        // MENSAJES Y ERRORES
+        // REGISTRAR EN EL LOG
         // =====================================================
 
-        private void MostrarErrorSql(SqlException ex)
+        private string RegistrarEnBitacora(
+            string accion,
+            string detalle)
         {
+            try
+            {
+                // Temporal hasta obtener el usuario de la sesión.
+                EscribirLog.Registrar("Admin", accion, detalle);
+
+                return "";
+            }
+            catch (Exception)
+            {
+                // Un fallo del archivo no significa que SQL haya fallado.
+                // Informamos el problema sin repetir la operación.
+                return " Aviso: no se pudo escribir en la bitácora.";
+            }
+        }
+
+        // =====================================================
+        // MOSTRAR ERRORES
+        // =====================================================
+
+        private void MostrarErrorSql(
+            string accion,
+            SqlException ex)
+        {
+            string aviso = RegistrarEnBitacora(
+                "ERROR_" + accion,
+                "Código SQL: " + ex.Number);
+
             if (ex.Number == 2601 || ex.Number == 2627)
             {
                 MostrarMensaje(
-                    "Ya existe un propietario con esa identificación.",
+                    "Ya existe un propietario con esa identificación." +
+                    aviso,
+                    false);
+            }
+            else if (ex.Number == 547 &&
+                     accion == "ELIMINAR_PROPIETARIO")
+            {
+                MostrarMensaje(
+                    "No se puede eliminar este propietario " +
+                    "porque tiene mascotas registradas." + aviso,
                     false);
             }
             else
             {
                 MostrarMensaje(
                     "No se pudo completar la operación: " +
-                    ex.Message,
+                    ex.Message + aviso,
                     false);
             }
+        }
+
+        private void MostrarError(
+            string accion,
+            string mensaje,
+            Exception ex)
+        {
+            string aviso = RegistrarEnBitacora(
+                "ERROR_" + accion,
+                "Tipo de error: " + ex.GetType().Name);
+
+            MostrarMensaje(
+                mensaje + ": " + ex.Message + aviso,
+                false);
         }
 
         private void MostrarMensaje(string mensaje, bool correcto)
