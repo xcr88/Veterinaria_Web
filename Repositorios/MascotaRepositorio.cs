@@ -9,7 +9,6 @@ namespace Veterinaria_Web.Repositorios
 {
     public class MascotaRepositorio
     {
-        // Guarda la cadena de conexión obtenida de Web.config.
         private readonly string _cadenaConexion;
 
         public MascotaRepositorio()
@@ -89,8 +88,81 @@ namespace Veterinaria_Web.Repositorios
                 }
             }
 
-            // No existe una mascota con ese identificador.
             return null;
+        }
+
+        // =====================================================
+        // CREATE: CREAR MASCOTA
+        // =====================================================
+
+        public int Crear(Mascota mascota)
+        {
+            using (SqlConnection conexion =
+                new SqlConnection(_cadenaConexion))
+            {
+                using (SqlCommand comando =
+                    new SqlCommand(
+                        "sp_CrearMascota",
+                        conexion))
+                {
+                    comando.CommandType =
+                        CommandType.StoredProcedure;
+
+                    comando.Parameters.Add(
+                        "@NOMBRE",
+                        SqlDbType.NVarChar,
+                        15
+                    ).Value = mascota.NOMBRE;
+
+                    comando.Parameters.Add(
+                        "@FECHA_NACIMIENTO",
+                        SqlDbType.Date
+                    ).Value = mascota.FECHA_NACIMIENTO.Date;
+
+                    comando.Parameters.Add(
+                        "@SEXO",
+                        SqlDbType.NVarChar,
+                        1
+                    ).Value = mascota.SEXO;
+
+                    // Coincide con DECIMAL(5,2) de SQL Server.
+                    SqlParameter parametroPeso =
+                        comando.Parameters.Add(
+                            "@PESO",
+                            SqlDbType.Decimal);
+
+                    parametroPeso.Precision = 5;
+                    parametroPeso.Scale = 2;
+                    parametroPeso.Value = mascota.PESO;
+
+                    // Envía NULL cuando no se informan alergias.
+                    comando.Parameters.Add(
+                        "@ALERGIAS",
+                        SqlDbType.NVarChar,
+                        150
+                    ).Value =
+                        string.IsNullOrWhiteSpace(mascota.ALERGIAS)
+                            ? (object)DBNull.Value
+                            : mascota.ALERGIAS;
+
+                    comando.Parameters.Add(
+                        "@ID_PROPIETARIO",
+                        SqlDbType.Int
+                    ).Value = mascota.ID_PROPIETARIO;
+
+                    comando.Parameters.Add(
+                        "@ADICIONADO_POR",
+                        SqlDbType.NVarChar,
+                        50
+                    ).Value = mascota.ADICIONADO_POR;
+
+                    conexion.Open();
+
+                    // Obtiene el ID generado por el procedimiento.
+                    return Convert.ToInt32(
+                        comando.ExecuteScalar());
+                }
+            }
         }
 
         // =====================================================
@@ -139,7 +211,8 @@ namespace Veterinaria_Web.Repositorios
                 MODIFICADO_POR =
                     lector["MODIFICADO_POR"] == DBNull.Value
                         ? null
-                        : Convert.ToString(lector["MODIFICADO_POR"])
+                        : Convert.ToString(
+                            lector["MODIFICADO_POR"])
             };
         }
     }

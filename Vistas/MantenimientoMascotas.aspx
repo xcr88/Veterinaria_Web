@@ -14,9 +14,7 @@
         <div>
             <h1>Mantenimiento de mascotas</h1>
 
-            <asp:Label
-                ID="lblUsuario"
-                runat="server" />
+            <asp:Label ID="lblUsuario" runat="server" />
 
             <br /><br />
 
@@ -34,11 +32,83 @@
                 Text="Cerrar sesión"
                 NavigateUrl="~/Vistas/CerrarSesion.aspx" />
 
+            <h2>Agregar mascota</h2>
+
+            <asp:Label runat="server"
+                AssociatedControlID="txtNombre"
+                Text="Nombre:" />
+            <br />
+            <asp:TextBox ID="txtNombre"
+                runat="server" MaxLength="15" />
             <br /><br />
 
-            <asp:Label
-                ID="lblMensaje"
+            <asp:Label runat="server"
+                AssociatedControlID="txtFechaNacimiento"
+                Text="Fecha de nacimiento:" />
+            <br />
+            <asp:TextBox ID="txtFechaNacimiento"
+                runat="server" TextMode="Date" />
+            <br /><br />
+
+            <asp:Label runat="server"
+                AssociatedControlID="ddlSexo"
+                Text="Sexo:" />
+            <br />
+            <asp:DropDownList ID="ddlSexo" runat="server">
+                <asp:ListItem Text="Seleccione" Value="" />
+                <asp:ListItem Text="Hembra" Value="H" />
+                <asp:ListItem Text="Macho" Value="M" />
+            </asp:DropDownList>
+            <br /><br />
+
+            <asp:Label runat="server"
+                AssociatedControlID="txtPeso"
+                Text="Peso en kilogramos:" />
+            <br />
+            <asp:TextBox ID="txtPeso"
+                runat="server" MaxLength="6" />
+            <br />
+            <small>Ejemplo: 4.50 o 4,50. Máximo dos decimales.</small>
+            <br /><br />
+
+            <asp:Label runat="server"
+                AssociatedControlID="txtAlergias"
+                Text="Alergias (opcional):" />
+            <br />
+            <asp:TextBox ID="txtAlergias"
+                runat="server"
+                TextMode="MultiLine"
+                Rows="3"
+                MaxLength="150" />
+            <br /><br />
+
+            <asp:Label runat="server"
+                AssociatedControlID="ddlPropietario"
+                Text="Propietario:" />
+            <br />
+            <asp:DropDownList
+                ID="ddlPropietario"
                 runat="server" />
+            <br /><br />
+
+            <asp:Button
+                ID="btnGuardar"
+                runat="server"
+                Text="Guardar mascota"
+                OnClick="btnGuardar_Click" />
+
+            <asp:Button
+                ID="btnNuevo"
+                runat="server"
+                Text="Limpiar campos"
+                CausesValidation="False"
+                OnClick="btnNuevo_Click" />
+
+            <br /><br />
+
+            <asp:Label ID="lblMensaje" runat="server" />
+
+            <hr />
 
             <h2>Mascotas registradas</h2>
 
