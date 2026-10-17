@@ -21,80 +21,95 @@
             <asp:HyperLink
                 ID="lnkPropietarios"
                 runat="server"
-                Text="Ir a propietarios"
-                NavigateUrl="~/Vistas/MantenimientoPropietarios.aspx" />
+                NavigateUrl="~/Vistas/MantenimientoPropietarios.aspx"
+                Text="Ir a propietarios" />
 
-            &nbsp;|&nbsp;
+            |
 
             <asp:HyperLink
                 ID="lnkMascotas"
                 runat="server"
-                Text="Ir a mascotas"
-                NavigateUrl="~/Vistas/MantenimientoMascotas.aspx" />
+                NavigateUrl="~/Vistas/MantenimientoMascotas.aspx"
+                Text="Ir a mascotas" />
 
-            &nbsp;|&nbsp;
+            |
 
             <asp:HyperLink
                 ID="lnkCerrarSesion"
                 runat="server"
-                Text="Cerrar sesión"
-                NavigateUrl="~/Vistas/CerrarSesion.aspx" />
+                NavigateUrl="~/Vistas/CerrarSesion.aspx"
+                Text="Cerrar sesión" />
 
-            <h2>Registrar atención</h2>
+            <h2>Datos de la atención</h2>
 
-            <asp:Label runat="server"
+            <asp:Label
+                runat="server"
                 AssociatedControlID="ddlMascota"
                 Text="Mascota:" />
             <br />
+
             <asp:DropDownList
                 ID="ddlMascota"
                 runat="server" />
+
             <br /><br />
 
-            <asp:Label runat="server"
+            <asp:Label
+                runat="server"
                 AssociatedControlID="txtFechaAtencion"
                 Text="Fecha de atención:" />
             <br />
+
             <asp:TextBox
                 ID="txtFechaAtencion"
                 runat="server"
                 TextMode="Date" />
+
             <br /><br />
 
-            <asp:Label runat="server"
+            <asp:Label
+                runat="server"
                 AssociatedControlID="txtSintomas"
                 Text="Síntomas:" />
             <br />
+
             <asp:TextBox
                 ID="txtSintomas"
                 runat="server"
                 TextMode="MultiLine"
                 Rows="3"
                 MaxLength="150" />
+
             <br /><br />
 
-            <asp:Label runat="server"
+            <asp:Label
+                runat="server"
                 AssociatedControlID="txtDiagnostico"
                 Text="Diagnóstico:" />
             <br />
+
             <asp:TextBox
                 ID="txtDiagnostico"
                 runat="server"
                 TextMode="MultiLine"
                 Rows="3"
                 MaxLength="150" />
+
             <br /><br />
 
-            <asp:Label runat="server"
+            <asp:Label
+                runat="server"
                 AssociatedControlID="txtTratamiento"
                 Text="Tratamiento:" />
             <br />
+
             <asp:TextBox
                 ID="txtTratamiento"
                 runat="server"
                 TextMode="MultiLine"
                 Rows="3"
                 MaxLength="150" />
+
             <br /><br />
 
             <asp:Button
@@ -102,6 +117,13 @@
                 runat="server"
                 Text="Guardar atención"
                 OnClick="btnGuardar_Click" />
+
+            <asp:Button
+                ID="btnActualizar"
+                runat="server"
+                Text="Actualizar atención"
+                Enabled="False"
+                OnClick="btnActualizar_Click" />
 
             <asp:Button
                 ID="btnNueva"
@@ -112,7 +134,9 @@
 
             <br /><br />
 
-            <asp:Label ID="lblMensaje" runat="server" />
+            <asp:Label
+                ID="lblMensaje"
+                runat="server" />
 
             <hr />
 
@@ -123,9 +147,17 @@
                 runat="server"
                 AutoGenerateColumns="False"
                 DataKeyNames="ID_HOJA"
-                EmptyDataText="No hay hojas clínicas registradas.">
+                EmptyDataText="No hay hojas clínicas registradas."
+                OnSelectedIndexChanged="gvHojasClinicas_SelectedIndexChanged">
+
+                <SelectedRowStyle BackColor="LightYellow" />
 
                 <Columns>
+                    <asp:CommandField
+                        ShowSelectButton="True"
+                        SelectText="Seleccionar"
+                        CausesValidation="False" />
+
                     <asp:BoundField
                         DataField="ID_HOJA"
                         HeaderText="ID atención" />

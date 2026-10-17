@@ -20,10 +20,7 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
-        // =====================================================
-        // COMPROBAR LA SESIÓN
-        // =====================================================
-
+        // Verifica la sesión antes de procesar los controles.
         protected override void OnInit(EventArgs e)
         {
             if (Session["ID_USUARIO"] == null ||
@@ -55,14 +52,10 @@ namespace Veterinaria_Web.Vistas
                     Server.HtmlEncode(UsuarioActual);
 
                 CargarMascotas();
-                LimpiarCampos();
+                PrepararNueva();
                 CargarHojasClinicas();
             }
         }
-
-        // =====================================================
-        // CARGAR LAS MASCOTAS DISPONIBLES
-        // =====================================================
 
         private void CargarMascotas()
         {
@@ -76,8 +69,8 @@ namespace Veterinaria_Web.Vistas
                 MascotaRepositorio repositorio =
                     new MascotaRepositorio();
 
-                foreach (Mascota mascota
-                    in repositorio.ConsultarTodos())
+                foreach (Mascota mascota in
+                    repositorio.ConsultarTodos())
                 {
                     string descripcion =
                         "ID: " + mascota.ID_MASCOTA +
@@ -88,13 +81,11 @@ namespace Veterinaria_Web.Vistas
                     ddlMascota.Items.Add(
                         new ListItem(
                             descripcion,
-                            mascota.ID_MASCOTA.ToString()));
+                            mascota.ID_MASCOTA.ToString(
+                                CultureInfo.InvariantCulture)));
                 }
 
-                btnGuardar.Enabled =
-                    ddlMascota.Items.Count > 1;
-
-                if (!btnGuardar.Enabled)
+                if (ddlMascota.Items.Count == 1)
                 {
                     MostrarMensaje(
                         "Primero registre una mascota.",
@@ -103,18 +94,12 @@ namespace Veterinaria_Web.Vistas
             }
             catch (Exception ex)
             {
-                btnGuardar.Enabled = false;
-
                 MostrarError(
                     "CONSULTAR_MASCOTAS",
                     "No se pudieron cargar las mascotas",
                     ex);
             }
         }
-
-        // =====================================================
-        // CONSULTAR LAS ATENCIONES
-        // =====================================================
 
         private void CargarHojasClinicas()
         {
@@ -135,7 +120,7 @@ namespace Veterinaria_Web.Vistas
                 if (!string.IsNullOrEmpty(aviso))
                 {
                     MostrarMensaje(
-                        "Listado de atenciones cargado." + aviso,
+                        "Listado cargado." + aviso,
                         false);
                 }
             }
@@ -143,18 +128,25 @@ namespace Veterinaria_Web.Vistas
             {
                 MostrarError(
                     "CONSULTAR_HOJAS_CLINICAS",
-                    "No se pudieron consultar las hojas clínicas",
+                    "No se pudieron cargar las atenciones",
                     ex);
             }
         }
 
-        // =====================================================
-        // CREAR UNA ATENCIÓN
-        // =====================================================
-
         protected void btnGuardar_Click(
-            object sender, EventArgs e)
+            object sender,
+            EventArgs e)
         {
+            // Impide crear otra atención mientras se está editando.
+            if (ViewState["ID_HOJA"] != null)
+            {
+                MostrarMensaje(
+                    "Presione Nueva atención para registrar otra.",
+                    false);
+
+                return;
+            }
+
             HojaClinica hoja;
 
             if (!IntentarLeerHoja(out hoja))
@@ -164,18 +156,8 @@ namespace Veterinaria_Web.Vistas
 
             try
             {
-                // Comprueba que la mascota todavía exista.
-                MascotaRepositorio mascotas =
-                    new MascotaRepositorio();
-
-                if (mascotas.ConsultarPorId(hoja.ID_MASCOTA) == null)
+                if (!ExisteMascota(hoja.ID_MASCOTA))
                 {
-                    CargarMascotas();
-
-                    MostrarMensaje(
-                        "La mascota seleccionada ya no existe.",
-                        false);
-
                     return;
                 }
 
@@ -184,43 +166,25 @@ namespace Veterinaria_Web.Vistas
                 HojaClinicaRepositorio repositorio =
                     new HojaClinicaRepositorio();
 
-                int idGenerado = repositorio.Crear(hoja);
+                int id = repositorio.Crear(hoja);
 
                 string aviso = RegistrarEnBitacora(
                     "CREAR_HOJA_CLINICA",
-                    "ID: " + idGenerado +
+                    "ID: " + id +
                     ". Mascota: " + hoja.ID_MASCOTA);
 
-                LimpiarCampos();
+                PrepararNueva();
 
                 MostrarMensaje(
                     "Atención guardada correctamente. ID: " +
-                    idGenerado + aviso,
+                    id + aviso,
                     true);
 
                 CargarHojasClinicas();
             }
             catch (SqlException ex)
             {
-                string aviso = RegistrarEnBitacora(
-                    "ERROR_CREAR_HOJA_CLINICA",
-                    "Código SQL: " + ex.Number);
-
-                if (ex.Number == 547)
-                {
-                    MostrarMensaje(
-                        "Revise la mascota y los datos de la atención. " +
-                        "No cumplen una relación o validación " +
-                        "de la base." + aviso,
-                        false);
-                }
-                else
-                {
-                    MostrarMensaje(
-                        "No se pudo guardar la atención: " +
-                        ex.Message + aviso,
-                        false);
-                }
+                MostrarErrorSql("CREAR_HOJA_CLINICA", ex);
             }
             catch (Exception ex)
             {
@@ -231,10 +195,206 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
-        // =====================================================
-        // VALIDAR Y LEER EL FORMULARIO
-        // =====================================================
+        protected void gvHojasClinicas_SelectedIndexChanged(
+            object sender,
+            EventArgs e)
+        {
+            // Se descarta cualquier selección anterior.
+            ViewState.Remove("ID_HOJA");
 
+            btnActualizar.Enabled = false;
+            btnGuardar.Enabled = false;
+
+            try
+            {
+                if (gvHojasClinicas.SelectedDataKey == null)
+                {
+                    PrepararNueva();
+
+                    MostrarMensaje(
+                        "Seleccione una atención.",
+                        false);
+
+                    return;
+                }
+
+                int id = Convert.ToInt32(
+                    gvHojasClinicas.SelectedDataKey.Value);
+
+                HojaClinicaRepositorio repositorio =
+                    new HojaClinicaRepositorio();
+
+                HojaClinica hoja =
+                    repositorio.ConsultarPorId(id);
+
+                if (hoja == null)
+                {
+                    PrepararNueva();
+                    CargarHojasClinicas();
+
+                    MostrarMensaje(
+                        "La atención seleccionada ya no existe.",
+                        false);
+
+                    return;
+                }
+
+                CargarMascotas();
+
+                ListItem mascota = ddlMascota.Items.FindByValue(
+                    hoja.ID_MASCOTA.ToString(
+                        CultureInfo.InvariantCulture));
+
+                if (mascota == null)
+                {
+                    PrepararNueva();
+
+                    MostrarMensaje(
+                        "No se pudo cargar la mascota de esta atención. " +
+                        "Intente seleccionar nuevamente el registro.",
+                        false);
+
+                    return;
+                }
+
+                ddlMascota.ClearSelection();
+                mascota.Selected = true;
+
+                txtFechaAtencion.Text =
+                    hoja.FECHA_ATENCION.ToString(
+                        "yyyy-MM-dd",
+                        CultureInfo.InvariantCulture);
+
+                txtSintomas.Text = hoja.SINTOMAS;
+                txtDiagnostico.Text = hoja.DIAGNOSTICO;
+                txtTratamiento.Text = hoja.TRATAMIENTO;
+
+                ViewState["ID_HOJA"] = hoja.ID_HOJA;
+
+                btnGuardar.Enabled = false;
+                btnActualizar.Enabled = true;
+
+                string aviso = RegistrarEnBitacora(
+                    "CONSULTAR_HOJA_CLINICA",
+                    "ID: " + hoja.ID_HOJA);
+
+                MostrarMensaje(
+                    "Atención seleccionada. ID: " +
+                    hoja.ID_HOJA + aviso,
+                    true);
+            }
+            catch (Exception ex)
+            {
+                PrepararNueva();
+
+                MostrarError(
+                    "CONSULTAR_HOJA_CLINICA",
+                    "No se pudo cargar la atención seleccionada",
+                    ex);
+            }
+        }
+
+        protected void btnActualizar_Click(
+            object sender,
+            EventArgs e)
+        {
+            if (ViewState["ID_HOJA"] == null)
+            {
+                MostrarMensaje(
+                    "Primero seleccione una atención.",
+                    false);
+
+                return;
+            }
+
+            HojaClinica hoja;
+
+            if (!IntentarLeerHoja(out hoja))
+            {
+                return;
+            }
+
+            try
+            {
+                if (!ExisteMascota(hoja.ID_MASCOTA))
+                {
+                    return;
+                }
+
+                hoja.ID_HOJA = Convert.ToInt32(
+                    ViewState["ID_HOJA"]);
+
+                hoja.MODIFICADO_POR = UsuarioActual;
+
+                HojaClinicaRepositorio repositorio =
+                    new HojaClinicaRepositorio();
+
+                bool actualizado =
+                    repositorio.Actualizar(hoja);
+
+                if (!actualizado)
+                {
+                    PrepararNueva();
+                    CargarHojasClinicas();
+
+                    MostrarMensaje(
+                        "La atención ya no existe. " +
+                        "No se realizaron cambios.",
+                        false);
+
+                    return;
+                }
+
+                string aviso = RegistrarEnBitacora(
+                    "ACTUALIZAR_HOJA_CLINICA",
+                    "ID: " + hoja.ID_HOJA +
+                    ". Mascota: " + hoja.ID_MASCOTA);
+
+                PrepararNueva();
+
+                MostrarMensaje(
+                    "Atención actualizada correctamente. ID: " +
+                    hoja.ID_HOJA + aviso,
+                    true);
+
+                CargarHojasClinicas();
+            }
+            catch (SqlException ex)
+            {
+                MostrarErrorSql(
+                    "ACTUALIZAR_HOJA_CLINICA",
+                    ex);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(
+                    "ACTUALIZAR_HOJA_CLINICA",
+                    "No se pudo actualizar la atención",
+                    ex);
+            }
+        }
+
+        private bool ExisteMascota(int idMascota)
+        {
+            MascotaRepositorio repositorio =
+                new MascotaRepositorio();
+
+            if (repositorio.ConsultarPorId(idMascota) != null)
+            {
+                return true;
+            }
+
+            CargarMascotas();
+
+            MostrarMensaje(
+                "La mascota seleccionada ya no existe. " +
+                "Seleccione otra mascota.",
+                false);
+
+            return false;
+        }
+
+        // Valida los datos tanto al crear como al actualizar.
         private bool IntentarLeerHoja(out HojaClinica hoja)
         {
             hoja = null;
@@ -242,8 +402,8 @@ namespace Veterinaria_Web.Vistas
             int idMascota;
 
             if (!int.TryParse(
-                ddlMascota.SelectedValue,
-                out idMascota) ||
+                    ddlMascota.SelectedValue,
+                    out idMascota) ||
                 idMascota <= 0)
             {
                 MostrarMensaje(
@@ -263,13 +423,13 @@ namespace Veterinaria_Web.Vistas
                 out fechaAtencion))
             {
                 MostrarMensaje(
-                    "Seleccione una fecha de atención válida.",
+                    "Ingrese una fecha de atención válida.",
                     false);
 
                 return false;
             }
 
-            if (fechaAtencion > DateTime.Today)
+            if (fechaAtencion.Date > DateTime.Today)
             {
                 MostrarMensaje(
                     "La fecha de atención no puede ser futura.",
@@ -287,20 +447,20 @@ namespace Veterinaria_Web.Vistas
                 string.IsNullOrWhiteSpace(tratamiento))
             {
                 MostrarMensaje(
-                    "Complete síntomas, diagnóstico y tratamiento.",
+                    "Complete los síntomas, el diagnóstico " +
+                    "y el tratamiento.",
                     false);
 
                 return false;
             }
 
-            // Los TextBox multilínea también se validan aquí.
             if (sintomas.Length > 150 ||
                 diagnostico.Length > 150 ||
                 tratamiento.Length > 150)
             {
                 MostrarMensaje(
-                    "Síntomas, diagnóstico y tratamiento " +
-                    "admiten hasta 150 caracteres cada uno.",
+                    "Los síntomas, el diagnóstico y el tratamiento " +
+                    "deben tener como máximo 150 caracteres cada uno.",
                     false);
 
                 return false;
@@ -308,47 +468,53 @@ namespace Veterinaria_Web.Vistas
 
             hoja = new HojaClinica
             {
-                FECHA_ATENCION = fechaAtencion,
+                ID_MASCOTA = idMascota,
+                FECHA_ATENCION = fechaAtencion.Date,
                 SINTOMAS = sintomas,
                 DIAGNOSTICO = diagnostico,
-                TRATAMIENTO = tratamiento,
-                ID_MASCOTA = idMascota
+                TRATAMIENTO = tratamiento
             };
 
             return true;
         }
 
-        // =====================================================
-        // PREPARAR UNA ATENCIÓN NUEVA
-        // =====================================================
-
-        protected void btnNueva_Click(object sender, EventArgs e)
+        protected void btnNueva_Click(
+            object sender,
+            EventArgs e)
         {
             lblMensaje.Text = "";
+
             CargarMascotas();
-            LimpiarCampos();
+            PrepararNueva();
         }
 
-        private void LimpiarCampos()
+        private void PrepararNueva()
         {
+            ViewState.Remove("ID_HOJA");
+
+            gvHojasClinicas.SelectedIndex = -1;
+
             if (ddlMascota.Items.Count > 0)
             {
                 ddlMascota.SelectedIndex = 0;
             }
 
-            txtFechaAtencion.Text = DateTime.Today.ToString(
-                "yyyy-MM-dd",
-                CultureInfo.InvariantCulture);
+            txtFechaAtencion.Text =
+                DateTime.Today.ToString(
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture);
 
             txtSintomas.Text = "";
             txtDiagnostico.Text = "";
             txtTratamiento.Text = "";
+
+            btnGuardar.Enabled =
+                ddlMascota.Items.Count > 1;
+
+            btnActualizar.Enabled = false;
         }
 
-        // =====================================================
-        // LOG Y MENSAJES
-        // =====================================================
-
+        // Un fallo del LOG no cambia el resultado de la operación SQL.
         private string RegistrarEnBitacora(
             string accion,
             string detalle)
@@ -368,6 +534,31 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
+        private void MostrarErrorSql(
+            string accion,
+            SqlException ex)
+        {
+            string aviso = RegistrarEnBitacora(
+                "ERROR_" + accion,
+                "Código SQL: " + ex.Number);
+
+            if (ex.Number == 547)
+            {
+                MostrarMensaje(
+                    "Revise la mascota y los datos de la atención. " +
+                    "No cumplen una relación o validación " +
+                    "de la base de datos." + aviso,
+                    false);
+            }
+            else
+            {
+                MostrarMensaje(
+                    "No se pudo completar la operación: " +
+                    ex.Message + aviso,
+                    false);
+            }
+        }
+
         private void MostrarError(
             string accion,
             string mensaje,
@@ -382,9 +573,12 @@ namespace Veterinaria_Web.Vistas
                 false);
         }
 
-        private void MostrarMensaje(string mensaje, bool correcto)
+        private void MostrarMensaje(
+            string mensaje,
+            bool correcto)
         {
-            lblMensaje.Text = Server.HtmlEncode(mensaje);
+            lblMensaje.Text =
+                Server.HtmlEncode(mensaje);
 
             lblMensaje.ForeColor = correcto
                 ? System.Drawing.Color.Green
