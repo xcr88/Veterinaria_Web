@@ -1,2 +1,244 @@
-﻿body {
+﻿/* PALETA DEL MANUAL */
+:root {
+    --dorado: #E7A84E;
+    --naranja: #D96C2C;
+    --verde: #3E8E7E;
+    --azul: #274C56;
+    --crema: #F6E2B3;
+    --blanco: #FFFFFF;
+    --negro: #000000;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 24px;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    color: var(--azul);
+    background-color: #F7F5F0;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.pagina {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* ENCABEZADO */
+.encabezado {
+    padding: 28px;
+    margin-bottom: 28px;
+    border-radius: 14px;
+    background-color: var(--azul);
+    color: var(--blanco);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+    .encabezado h1 {
+        margin: 0 0 10px;
+        font-size: 36px;
+    }
+
+    .encabezado p {
+        margin: 0;
+        color: var(--crema);
+    }
+
+/* FORMULARIO Y LISTADO */
+.contenedor {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.tarjeta {
+    padding: 26px;
+    border: 1px solid #DEE4E5;
+    border-radius: 14px;
+    background-color: var(--blanco);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+    .tarjeta h2 {
+        margin: 0 0 24px;
+        font-size: 24px;
+    }
+
+.listado {
+    min-width: 0;
+}
+
+/* ETIQUETAS Y CAMPOS */
+.formulario label {
+    display: block;
+    margin: 16px 0 8px;
+    font-weight: bold;
+}
+
+.entrada,
+.selector {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #D8D1C5;
+    border-radius: 8px;
+    background-color: var(--blanco);
+    color: var(--azul);
+    font-family: inherit;
+    font-size: 16px;
+}
+
+    .entrada:focus,
+    .selector:focus {
+        outline: 2px solid var(--verde);
+        outline-offset: 2px;
+    }
+
+.obligatorio,
+.error {
+    color: #A83813;
+}
+
+.error {
+    font-size: 14px;
+}
+
+/* BOTONES */
+.boton {
+    display: inline-block;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.boton-primario {
+    background-color: var(--verde);
+    color: var(--blanco);
+}
+
+.boton-secundario {
+    background-color: var(--crema);
+    color: var(--azul);
+}
+
+.boton-editar {
+    background-color: var(--dorado);
+    color: var(--negro);
+}
+
+.boton-peligro {
+    background-color: var(--naranja);
+    color: var(--negro);
+}
+
+.boton:hover {
+    filter: brightness(0.94);
+}
+
+.boton:focus-visible {
+    outline: 3px solid var(--azul);
+    outline-offset: 3px;
+}
+
+.acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.formulario .acciones {
+    margin-top: 24px;
+}
+
+/* BÚSQUEDA */
+.busqueda {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr) auto;
+    gap: 12px;
+    margin-bottom: 24px;
+    align-items: center;
+}
+
+/* TABLA */
+.tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .tabla th {
+        padding: 12px;
+        background-color: var(--azul);
+        color: var(--blanco);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .tabla td {
+        padding: 12px;
+        border-bottom: 1px solid #D8D1C5;
+        vertical-align: middle;
+    }
+
+    .tabla tr:nth-child(even) td {
+        background-color: #FCF8EE;
+    }
+
+    .tabla tr:hover td {
+        background-color: var(--crema);
+    }
+
+/* MENSAJES */
+.mensaje {
+    display: block;
+    margin-bottom: 20px;
+    padding: 14px;
+    border: 1px solid var(--azul);
+    border-radius: 8px;
+    background-color: var(--crema);
+    color: var(--azul);
+}
+
+    .mensaje:empty {
+        display: none;
+    }
+
+/* ADAPTACIÓN A PANTALLAS PEQUEÑAS */
+@media (max-width: 1000px) {
+    .contenedor {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 12px;
+    }
+
+    .encabezado,
+    .tarjeta {
+        padding: 20px;
+    }
+
+        .encabezado h1 {
+            font-size: 28px;
+        }
+
+    .busqueda {
+        grid-template-columns: 1fr;
+    }
 }
