@@ -56,15 +56,16 @@ namespace Veterinaria_Web.Vistas
                     Server.HtmlEncode(UsuarioActual);
 
                 CargarPropietarios();
+                PrepararNueva();
                 CargarMascotas();
             }
         }
 
         // =====================================================
-        // CARGAR LA LISTA DE PROPIETARIOS
+        // CARGAR PROPIETARIOS
         // =====================================================
 
-        private void CargarPropietarios()
+        private bool CargarPropietarios()
         {
             ddlPropietario.Items.Clear();
 
@@ -91,29 +92,28 @@ namespace Veterinaria_Web.Vistas
                             propietario.ID_PROPIETARIO.ToString()));
                 }
 
-                btnGuardar.Enabled =
-                    ddlPropietario.Items.Count > 1;
-
-                if (!btnGuardar.Enabled)
+                if (ddlPropietario.Items.Count == 1)
                 {
                     MostrarMensaje(
                         "Primero registre un propietario.",
                         false);
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
-                btnGuardar.Enabled = false;
-
                 MostrarError(
                     "CONSULTAR_PROPIETARIOS",
                     "No se pudieron cargar los propietarios",
                     ex);
+
+                return false;
             }
         }
 
         // =====================================================
-        // CONSULTAR LAS MASCOTAS
+        // CONSULTAR MASCOTAS
         // =====================================================
 
         private void CargarMascotas()
@@ -149,31 +149,136 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
+        // SELECCIONAR MASCOTA
+        // =====================================================
+
+        protected void gvMascotas_SelectedIndexChanged(
+            object sender, EventArgs e)
+        {
+            if (gvMascotas.SelectedDataKey == null)
+            {
+                MostrarMensaje(
+                    "Seleccione una mascota de la lista.",
+                    false);
+
+                return;
+            }
+
+            try
+            {
+                int idMascota = Convert.ToInt32(
+                    gvMascotas.SelectedDataKey.Value);
+
+                MascotaRepositorio repositorio =
+                    new MascotaRepositorio();
+
+                Mascota mascota =
+                    repositorio.ConsultarPorId(idMascota);
+
+                if (mascota == null)
+                {
+                    PrepararNueva();
+                    CargarMascotas();
+
+                    MostrarMensaje(
+                        "La mascota seleccionada ya no existe.",
+                        false);
+
+                    return;
+                }
+
+                // Actualiza las opciones antes de seleccionar al dueño.
+                if (!CargarPropietarios())
+                {
+                    PrepararNueva();
+                    return;
+                }
+
+                ListItem propietario =
+                    ddlPropietario.Items.FindByValue(
+                        mascota.ID_PROPIETARIO.ToString());
+
+                if (propietario == null)
+                {
+                    PrepararNueva();
+
+                    MostrarMensaje(
+                        "No se encontró el propietario de esta mascota.",
+                        false);
+
+                    return;
+                }
+
+                ViewState["ID_MASCOTA"] = mascota.ID_MASCOTA;
+
+                txtNombre.Text = mascota.NOMBRE;
+
+                // El control Date necesita este formato.
+                txtFechaNacimiento.Text =
+                    mascota.FECHA_NACIMIENTO.ToString(
+                        "yyyy-MM-dd",
+                        CultureInfo.InvariantCulture);
+
+                ddlSexo.SelectedValue = mascota.SEXO;
+
+                txtPeso.Text = mascota.PESO.ToString(
+                    "F2",
+                    CultureInfo.InvariantCulture);
+
+                txtAlergias.Text = mascota.ALERGIAS ?? "";
+
+                ddlPropietario.SelectedValue =
+                    mascota.ID_PROPIETARIO.ToString();
+
+                btnGuardar.Enabled = false;
+                btnActualizar.Enabled = true;
+
+                string aviso = RegistrarEnBitacora(
+                    "CONSULTAR_MASCOTA",
+                    "ID: " + mascota.ID_MASCOTA);
+
+                MostrarMensaje(
+                    "Mascota seleccionada. ID: " +
+                    mascota.ID_MASCOTA + aviso,
+                    true);
+            }
+            catch (Exception ex)
+            {
+                PrepararNueva();
+
+                MostrarError(
+                    "CONSULTAR_MASCOTA",
+                    "No se pudo cargar la mascota",
+                    ex);
+            }
+        }
+
+        // =====================================================
         // CREAR MASCOTA
         // =====================================================
 
         protected void btnGuardar_Click(
             object sender, EventArgs e)
         {
-            DateTime fechaNacimiento;
-            decimal peso;
-            int idPropietario;
+            if (ViewState["ID_MASCOTA"] != null)
+            {
+                MostrarMensaje(
+                    "Pulse Nueva mascota para crear otro registro.",
+                    false);
 
-            if (!ValidarDatos(
-                out fechaNacimiento,
-                out peso,
-                out idPropietario))
+                return;
+            }
+
+            Mascota mascota;
+
+            if (!IntentarLeerMascota(out mascota))
             {
                 return;
             }
 
             try
             {
-                // Comprueba que el propietario todavía exista.
-                PropietarioRepositorio propietarios =
-                    new PropietarioRepositorio();
-
-                if (propietarios.ConsultarPorId(idPropietario) == null)
+                if (!ExistePropietario(mascota.ID_PROPIETARIO))
                 {
                     CargarPropietarios();
 
@@ -184,16 +289,7 @@ namespace Veterinaria_Web.Vistas
                     return;
                 }
 
-                Mascota mascota = new Mascota
-                {
-                    NOMBRE = txtNombre.Text.Trim(),
-                    FECHA_NACIMIENTO = fechaNacimiento,
-                    SEXO = ddlSexo.SelectedValue,
-                    PESO = peso,
-                    ALERGIAS = txtAlergias.Text.Trim(),
-                    ID_PROPIETARIO = idPropietario,
-                    ADICIONADO_POR = UsuarioActual
-                };
+                mascota.ADICIONADO_POR = UsuarioActual;
 
                 MascotaRepositorio repositorio =
                     new MascotaRepositorio();
@@ -203,9 +299,9 @@ namespace Veterinaria_Web.Vistas
                 string aviso = RegistrarEnBitacora(
                     "CREAR_MASCOTA",
                     "ID: " + idGenerado +
-                    ". Propietario: " + idPropietario);
+                    ". Propietario: " + mascota.ID_PROPIETARIO);
 
-                LimpiarCampos();
+                PrepararNueva();
 
                 MostrarMensaje(
                     "Mascota guardada correctamente. ID: " +
@@ -216,25 +312,7 @@ namespace Veterinaria_Web.Vistas
             }
             catch (SqlException ex)
             {
-                string aviso = RegistrarEnBitacora(
-                    "ERROR_CREAR_MASCOTA",
-                    "Código SQL: " + ex.Number);
-
-                if (ex.Number == 547)
-                {
-                    MostrarMensaje(
-                        "Revise el propietario, el sexo y el peso. " +
-                        "Los datos no cumplen una relación o validación " +
-                        "de la base." + aviso,
-                        false);
-                }
-                else
-                {
-                    MostrarMensaje(
-                        "No se pudo guardar la mascota: " +
-                        ex.Message + aviso,
-                        false);
-                }
+                MostrarErrorSql("CREAR_MASCOTA", ex);
             }
             catch (Exception ex)
             {
@@ -246,17 +324,106 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
-        // VALIDAR EL FORMULARIO
+        // ACTUALIZAR MASCOTA
         // =====================================================
 
-        private bool ValidarDatos(
-            out DateTime fechaNacimiento,
-            out decimal peso,
-            out int idPropietario)
+        protected void btnActualizar_Click(
+            object sender, EventArgs e)
         {
-            fechaNacimiento = DateTime.MinValue;
-            peso = 0;
-            idPropietario = 0;
+            if (ViewState["ID_MASCOTA"] == null)
+            {
+                MostrarMensaje(
+                    "Primero seleccione una mascota.",
+                    false);
+
+                return;
+            }
+
+            Mascota mascota;
+
+            if (!IntentarLeerMascota(out mascota))
+            {
+                return;
+            }
+
+            try
+            {
+                if (!ExistePropietario(mascota.ID_PROPIETARIO))
+                {
+                    CargarPropietarios();
+
+                    MostrarMensaje(
+                        "El propietario seleccionado ya no existe.",
+                        false);
+
+                    return;
+                }
+
+                mascota.ID_MASCOTA =
+                    Convert.ToInt32(ViewState["ID_MASCOTA"]);
+
+                mascota.MODIFICADO_POR = UsuarioActual;
+
+                MascotaRepositorio repositorio =
+                    new MascotaRepositorio();
+
+                bool actualizado = repositorio.Actualizar(mascota);
+
+                if (!actualizado)
+                {
+                    PrepararNueva();
+                    CargarMascotas();
+
+                    MostrarMensaje(
+                        "No se actualizó porque la mascota ya no existe.",
+                        false);
+
+                    return;
+                }
+
+                string aviso = RegistrarEnBitacora(
+                    "ACTUALIZAR_MASCOTA",
+                    "ID: " + mascota.ID_MASCOTA);
+
+                int idActualizado = mascota.ID_MASCOTA;
+
+                PrepararNueva();
+
+                MostrarMensaje(
+                    "Mascota actualizada correctamente. ID: " +
+                    idActualizado + aviso,
+                    true);
+
+                CargarMascotas();
+            }
+            catch (SqlException ex)
+            {
+                MostrarErrorSql("ACTUALIZAR_MASCOTA", ex);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(
+                    "ACTUALIZAR_MASCOTA",
+                    "No se pudo actualizar la mascota",
+                    ex);
+            }
+        }
+
+        private bool ExistePropietario(int idPropietario)
+        {
+            PropietarioRepositorio repositorio =
+                new PropietarioRepositorio();
+
+            return repositorio.ConsultarPorId(idPropietario) != null;
+        }
+
+        // =====================================================
+        // VALIDAR Y LEER LOS DATOS DEL FORMULARIO
+        // =====================================================
+
+        private bool IntentarLeerMascota(out Mascota mascota)
+        {
+            mascota = null;
 
             string nombre = txtNombre.Text.Trim();
 
@@ -270,7 +437,8 @@ namespace Veterinaria_Web.Vistas
                 return false;
             }
 
-            // El control Date envía el valor como año-mes-día.
+            DateTime fechaNacimiento;
+
             if (!DateTime.TryParseExact(
                 txtFechaNacimiento.Text,
                 "yyyy-MM-dd",
@@ -304,7 +472,6 @@ namespace Veterinaria_Web.Vistas
                 return false;
             }
 
-            // Acepta punto o coma decimal, sin separadores de miles.
             string textoPeso = txtPeso.Text.Trim();
 
             if (!Regex.IsMatch(
@@ -320,6 +487,8 @@ namespace Veterinaria_Web.Vistas
             }
 
             textoPeso = textoPeso.Replace(',', '.');
+
+            decimal peso;
 
             if (!decimal.TryParse(
                 textoPeso,
@@ -345,6 +514,8 @@ namespace Veterinaria_Web.Vistas
                 return false;
             }
 
+            int idPropietario;
+
             if (!int.TryParse(
                 ddlPropietario.SelectedValue,
                 out idPropietario) ||
@@ -357,27 +528,47 @@ namespace Veterinaria_Web.Vistas
                 return false;
             }
 
+            mascota = new Mascota
+            {
+                NOMBRE = nombre,
+                FECHA_NACIMIENTO = fechaNacimiento,
+                SEXO = ddlSexo.SelectedValue,
+                PESO = peso,
+                ALERGIAS = txtAlergias.Text.Trim(),
+                ID_PROPIETARIO = idPropietario
+            };
+
             return true;
         }
 
         // =====================================================
-        // LIMPIAR EL FORMULARIO
+        // PREPARAR UNA MASCOTA NUEVA
         // =====================================================
 
         protected void btnNuevo_Click(object sender, EventArgs e)
         {
-            LimpiarCampos();
-            lblMensaje.Text = "";
+            CargarPropietarios();
+            PrepararNueva();
         }
 
-        private void LimpiarCampos()
+        private void PrepararNueva()
         {
+            ViewState.Remove("ID_MASCOTA");
+            gvMascotas.SelectedIndex = -1;
+
             txtNombre.Text = "";
             txtFechaNacimiento.Text = "";
             ddlSexo.SelectedIndex = 0;
             txtPeso.Text = "";
             txtAlergias.Text = "";
-            ddlPropietario.SelectedIndex = 0;
+
+            if (ddlPropietario.Items.Count > 0)
+            {
+                ddlPropietario.SelectedIndex = 0;
+            }
+
+            btnGuardar.Enabled = ddlPropietario.Items.Count > 1;
+            btnActualizar.Enabled = false;
         }
 
         // =====================================================
@@ -400,6 +591,29 @@ namespace Veterinaria_Web.Vistas
             catch (Exception)
             {
                 return " Aviso: no se pudo escribir en la bitácora.";
+            }
+        }
+
+        private void MostrarErrorSql(string accion, SqlException ex)
+        {
+            string aviso = RegistrarEnBitacora(
+                "ERROR_" + accion,
+                "Código SQL: " + ex.Number);
+
+            if (ex.Number == 547)
+            {
+                MostrarMensaje(
+                    "Revise el propietario, el sexo y el peso. " +
+                    "Los datos no cumplen una relación o validación " +
+                    "de la base." + aviso,
+                    false);
+            }
+            else
+            {
+                MostrarMensaje(
+                    "No se pudo completar la operación: " +
+                    ex.Message + aviso,
+                    false);
             }
         }
 

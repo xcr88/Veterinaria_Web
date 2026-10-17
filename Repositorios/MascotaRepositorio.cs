@@ -108,47 +108,7 @@ namespace Veterinaria_Web.Repositorios
                     comando.CommandType =
                         CommandType.StoredProcedure;
 
-                    comando.Parameters.Add(
-                        "@NOMBRE",
-                        SqlDbType.NVarChar,
-                        15
-                    ).Value = mascota.NOMBRE;
-
-                    comando.Parameters.Add(
-                        "@FECHA_NACIMIENTO",
-                        SqlDbType.Date
-                    ).Value = mascota.FECHA_NACIMIENTO.Date;
-
-                    comando.Parameters.Add(
-                        "@SEXO",
-                        SqlDbType.NVarChar,
-                        1
-                    ).Value = mascota.SEXO;
-
-                    // Coincide con DECIMAL(5,2) de SQL Server.
-                    SqlParameter parametroPeso =
-                        comando.Parameters.Add(
-                            "@PESO",
-                            SqlDbType.Decimal);
-
-                    parametroPeso.Precision = 5;
-                    parametroPeso.Scale = 2;
-                    parametroPeso.Value = mascota.PESO;
-
-                    // Envía NULL cuando no se informan alergias.
-                    comando.Parameters.Add(
-                        "@ALERGIAS",
-                        SqlDbType.NVarChar,
-                        150
-                    ).Value =
-                        string.IsNullOrWhiteSpace(mascota.ALERGIAS)
-                            ? (object)DBNull.Value
-                            : mascota.ALERGIAS;
-
-                    comando.Parameters.Add(
-                        "@ID_PROPIETARIO",
-                        SqlDbType.Int
-                    ).Value = mascota.ID_PROPIETARIO;
+                    AgregarDatos(comando, mascota);
 
                     comando.Parameters.Add(
                         "@ADICIONADO_POR",
@@ -158,11 +118,104 @@ namespace Veterinaria_Web.Repositorios
 
                     conexion.Open();
 
-                    // Obtiene el ID generado por el procedimiento.
+                    // El procedimiento devuelve el ID generado.
                     return Convert.ToInt32(
                         comando.ExecuteScalar());
                 }
             }
+        }
+
+        // =====================================================
+        // UPDATE: ACTUALIZAR MASCOTA
+        // =====================================================
+
+        public bool Actualizar(Mascota mascota)
+        {
+            using (SqlConnection conexion =
+                new SqlConnection(_cadenaConexion))
+            {
+                using (SqlCommand comando =
+                    new SqlCommand(
+                        "sp_ActualizarMascota",
+                        conexion))
+                {
+                    comando.CommandType =
+                        CommandType.StoredProcedure;
+
+                    // Identifica la mascota que se modificará.
+                    comando.Parameters.Add(
+                        "@ID_MASCOTA",
+                        SqlDbType.Int
+                    ).Value = mascota.ID_MASCOTA;
+
+                    AgregarDatos(comando, mascota);
+
+                    comando.Parameters.Add(
+                        "@MODIFICADO_POR",
+                        SqlDbType.NVarChar,
+                        50
+                    ).Value = mascota.MODIFICADO_POR;
+
+                    conexion.Open();
+
+                    // Lee FILAS_AFECTADAS del procedimiento.
+                    int filasAfectadas =
+                        Convert.ToInt32(comando.ExecuteScalar());
+
+                    return filasAfectadas > 0;
+                }
+            }
+        }
+
+        // =====================================================
+        // AUXILIAR: PARÁMETROS COMUNES DE CREAR Y ACTUALIZAR
+        // =====================================================
+
+        private void AgregarDatos(
+            SqlCommand comando,
+            Mascota mascota)
+        {
+            comando.Parameters.Add(
+                "@NOMBRE",
+                SqlDbType.NVarChar,
+                15
+            ).Value = mascota.NOMBRE;
+
+            comando.Parameters.Add(
+                "@FECHA_NACIMIENTO",
+                SqlDbType.Date
+            ).Value = mascota.FECHA_NACIMIENTO.Date;
+
+            comando.Parameters.Add(
+                "@SEXO",
+                SqlDbType.NVarChar,
+                1
+            ).Value = mascota.SEXO;
+
+            // Coincide con DECIMAL(5,2) de SQL Server.
+            SqlParameter parametroPeso =
+                comando.Parameters.Add(
+                    "@PESO",
+                    SqlDbType.Decimal);
+
+            parametroPeso.Precision = 5;
+            parametroPeso.Scale = 2;
+            parametroPeso.Value = mascota.PESO;
+
+            // Convierte las alergias no informadas en NULL.
+            comando.Parameters.Add(
+                "@ALERGIAS",
+                SqlDbType.NVarChar,
+                150
+            ).Value =
+                string.IsNullOrWhiteSpace(mascota.ALERGIAS)
+                    ? (object)DBNull.Value
+                    : mascota.ALERGIAS;
+
+            comando.Parameters.Add(
+                "@ID_PROPIETARIO",
+                SqlDbType.Int
+            ).Value = mascota.ID_PROPIETARIO;
         }
 
         // =====================================================

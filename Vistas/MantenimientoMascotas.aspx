@@ -32,7 +32,7 @@
                 Text="Cerrar sesión"
                 NavigateUrl="~/Vistas/CerrarSesion.aspx" />
 
-            <h2>Agregar mascota</h2>
+            <h2>Datos de la mascota</h2>
 
             <asp:Label runat="server"
                 AssociatedControlID="txtNombre"
@@ -98,9 +98,16 @@
                 OnClick="btnGuardar_Click" />
 
             <asp:Button
+                ID="btnActualizar"
+                runat="server"
+                Text="Actualizar mascota"
+                Enabled="False"
+                OnClick="btnActualizar_Click" />
+
+            <asp:Button
                 ID="btnNuevo"
                 runat="server"
-                Text="Limpiar campos"
+                Text="Nueva mascota"
                 CausesValidation="False"
                 OnClick="btnNuevo_Click" />
 
@@ -117,9 +124,17 @@
                 runat="server"
                 AutoGenerateColumns="False"
                 DataKeyNames="ID_MASCOTA"
-                EmptyDataText="No hay mascotas registradas.">
+                EmptyDataText="No hay mascotas registradas."
+                OnSelectedIndexChanged="gvMascotas_SelectedIndexChanged">
+
+                <SelectedRowStyle BackColor="LightYellow" />
 
                 <Columns>
+                    <asp:CommandField
+                        ShowSelectButton="True"
+                        SelectText="Seleccionar"
+                        CausesValidation="False" />
+
                     <asp:BoundField
                         DataField="ID_MASCOTA"
                         HeaderText="ID" />
