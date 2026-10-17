@@ -20,7 +20,6 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
-        // Verifica la sesión antes de procesar los controles.
         protected override void OnInit(EventArgs e)
         {
             if (Session["ID_USUARIO"] == null ||
@@ -137,7 +136,6 @@ namespace Veterinaria_Web.Vistas
             object sender,
             EventArgs e)
         {
-            // Impide crear otra atención mientras se está editando.
             if (ViewState["ID_HOJA"] != null)
             {
                 MostrarMensaje(
@@ -199,10 +197,10 @@ namespace Veterinaria_Web.Vistas
             object sender,
             EventArgs e)
         {
-            // Se descarta cualquier selección anterior.
             ViewState.Remove("ID_HOJA");
 
             btnActualizar.Enabled = false;
+            btnEliminar.Enabled = false;
             btnGuardar.Enabled = false;
 
             try
@@ -273,6 +271,7 @@ namespace Veterinaria_Web.Vistas
 
                 btnGuardar.Enabled = false;
                 btnActualizar.Enabled = true;
+                btnEliminar.Enabled = true;
 
                 string aviso = RegistrarEnBitacora(
                     "CONSULTAR_HOJA_CLINICA",
@@ -374,6 +373,71 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
+        protected void btnEliminar_Click(
+            object sender,
+            EventArgs e)
+        {
+            // El identificador proviene de la atención seleccionada.
+            if (ViewState["ID_HOJA"] == null)
+            {
+                MostrarMensaje(
+                    "Primero seleccione una atención.",
+                    false);
+
+                return;
+            }
+
+            try
+            {
+                int id = Convert.ToInt32(
+                    ViewState["ID_HOJA"]);
+
+                HojaClinicaRepositorio repositorio =
+                    new HojaClinicaRepositorio();
+
+                bool eliminado = repositorio.Eliminar(id);
+
+                if (!eliminado)
+                {
+                    PrepararNueva();
+                    CargarHojasClinicas();
+
+                    MostrarMensaje(
+                        "La atención ya no existe. " +
+                        "No se eliminó ningún registro.",
+                        false);
+
+                    return;
+                }
+
+                string aviso = RegistrarEnBitacora(
+                    "ELIMINAR_HOJA_CLINICA",
+                    "ID: " + id);
+
+                PrepararNueva();
+
+                MostrarMensaje(
+                    "Atención eliminada correctamente. ID: " +
+                    id + aviso,
+                    true);
+
+                CargarHojasClinicas();
+            }
+            catch (SqlException ex)
+            {
+                MostrarErrorSql(
+                    "ELIMINAR_HOJA_CLINICA",
+                    ex);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(
+                    "ELIMINAR_HOJA_CLINICA",
+                    "No se pudo eliminar la atención",
+                    ex);
+            }
+        }
+
         private bool ExisteMascota(int idMascota)
         {
             MascotaRepositorio repositorio =
@@ -394,7 +458,6 @@ namespace Veterinaria_Web.Vistas
             return false;
         }
 
-        // Valida los datos tanto al crear como al actualizar.
         private bool IntentarLeerHoja(out HojaClinica hoja)
         {
             hoja = null;
@@ -512,9 +575,9 @@ namespace Veterinaria_Web.Vistas
                 ddlMascota.Items.Count > 1;
 
             btnActualizar.Enabled = false;
+            btnEliminar.Enabled = false;
         }
 
-        // Un fallo del LOG no cambia el resultado de la operación SQL.
         private string RegistrarEnBitacora(
             string accion,
             string detalle)
@@ -544,10 +607,16 @@ namespace Veterinaria_Web.Vistas
 
             if (ex.Number == 547)
             {
+                string mensaje =
+                    accion == "ELIMINAR_HOJA_CLINICA"
+                    ? "No se puede eliminar la atención porque " +
+                      "tiene registros relacionados."
+                    : "Revise la mascota y los datos de la atención. " +
+                      "No cumplen una relación o validación " +
+                      "de la base de datos.";
+
                 MostrarMensaje(
-                    "Revise la mascota y los datos de la atención. " +
-                    "No cumplen una relación o validación " +
-                    "de la base de datos." + aviso,
+                    mensaje + aviso,
                     false);
             }
             else

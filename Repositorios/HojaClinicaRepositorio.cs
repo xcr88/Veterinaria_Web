@@ -72,7 +72,7 @@ namespace Veterinaria_Web.Repositorios
             return null;
         }
 
-        // Registra una atención y devuelve su nuevo identificador.
+        // Registra una atención y devuelve su identificador.
         public int Crear(HojaClinica hoja)
         {
             using (SqlConnection conexion =
@@ -96,7 +96,6 @@ namespace Veterinaria_Web.Repositorios
         }
 
         // Actualiza una atención existente.
-        // Devuelve false cuando el registro ya no existe.
         public bool Actualizar(HojaClinica hoja)
         {
             using (SqlConnection conexion =
@@ -116,6 +115,30 @@ namespace Veterinaria_Web.Repositorios
                     "@MODIFICADO_POR",
                     SqlDbType.NVarChar,
                     50).Value = hoja.MODIFICADO_POR;
+
+                conexion.Open();
+
+                int filasAfectadas =
+                    Convert.ToInt32(comando.ExecuteScalar());
+
+                return filasAfectadas > 0;
+            }
+        }
+
+        // Elimina únicamente la atención indicada.
+        // Devuelve false si el registro ya no existe.
+        public bool Eliminar(int idHoja)
+        {
+            using (SqlConnection conexion =
+                new SqlConnection(_cadenaConexion))
+            using (SqlCommand comando =
+                new SqlCommand("sp_EliminarHojaClinica", conexion))
+            {
+                comando.CommandType = CommandType.StoredProcedure;
+
+                comando.Parameters.Add(
+                    "@ID_HOJA",
+                    SqlDbType.Int).Value = idHoja;
 
                 conexion.Open();
 

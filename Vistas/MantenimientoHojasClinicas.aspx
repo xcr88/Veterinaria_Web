@@ -126,6 +126,15 @@
                 OnClick="btnActualizar_Click" />
 
             <asp:Button
+                ID="btnEliminar"
+                runat="server"
+                Text="Eliminar atención"
+                Enabled="False"
+                CausesValidation="False"
+                OnClientClick="return confirm('¿Desea eliminar la atención seleccionada?');"
+                OnClick="btnEliminar_Click" />
+
+            <asp:Button
                 ID="btnNueva"
                 runat="server"
                 Text="Nueva atención"
