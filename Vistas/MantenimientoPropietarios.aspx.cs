@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
+using System.Web;
 using Veterinaria_Web.Modelos;
 using Veterinaria_Web.Repositorios;
 using Veterinaria_Web.Utilidades;
@@ -11,8 +12,43 @@ namespace Veterinaria_Web.Vistas
     public partial class MantenimientoPropietarios
         : System.Web.UI.Page
     {
+        // Obtiene el nombre guardado al iniciar sesión.
+        private string UsuarioActual
+        {
+            get
+            {
+                return Convert.ToString(Session["Usuario"]);
+            }
+        }
+
+        // =====================================================
+        // COMPROBAR LA SESIÓN ANTES DE PROCESAR LA PÁGINA
+        // =====================================================
+
+        protected override void OnInit(EventArgs e)
+        {
+            if (Session["ID_USUARIO"] == null ||
+                string.IsNullOrWhiteSpace(UsuarioActual))
+            {
+                // Finaliza esta respuesta y dirige al ingreso.
+                // Así tampoco se ejecutan los eventos de los botones.
+                Response.Redirect("~/Vistas/Ingreso.aspx", true);
+                return;
+            }
+
+            // Vincula el estado del formulario con esta sesión.
+            ViewStateUserKey = Session.SessionID;
+
+            base.OnInit(e);
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
+            // Evita almacenar esta página en la caché del navegador.
+            Response.Cache.SetCacheability(HttpCacheability.NoCache);
+            Response.Cache.SetNoStore();
+            Response.Cache.SetExpires(DateTime.UtcNow.AddMinutes(-1));
+
             if (!IsPostBack)
             {
                 PrepararNuevo();
@@ -179,15 +215,14 @@ namespace Veterinaria_Web.Vistas
             {
                 Propietario propietario = LeerFormulario();
 
-                // Temporal hasta implementar el ingreso.
-                propietario.ADICIONADO_POR = "Admin";
+                // Usa el usuario conectado en la auditoría.
+                propietario.ADICIONADO_POR = UsuarioActual;
 
                 PropietarioRepositorio repositorio =
                     new PropietarioRepositorio();
 
                 int idGenerado = repositorio.Crear(propietario);
 
-                // Registra la creación después de confirmarla en SQL.
                 string aviso = RegistrarEnBitacora(
                     "CREAR_PROPIETARIO",
                     "ID: " + idGenerado);
@@ -243,8 +278,8 @@ namespace Veterinaria_Web.Vistas
                     Convert.ToInt32(
                         ViewState["ID_PROPIETARIO"]);
 
-                // Temporal hasta implementar el ingreso.
-                propietario.MODIFICADO_POR = "Admin";
+                // Conserva la creación y registra quién modifica.
+                propietario.MODIFICADO_POR = UsuarioActual;
 
                 PropietarioRepositorio repositorio =
                     new PropietarioRepositorio();
@@ -464,15 +499,16 @@ namespace Veterinaria_Web.Vistas
         {
             try
             {
-                // Temporal hasta obtener el usuario de la sesión.
-                EscribirLog.Registrar("Admin", accion, detalle);
+                // El responsable es quien inició sesión.
+                EscribirLog.Registrar(
+                    UsuarioActual,
+                    accion,
+                    detalle);
 
                 return "";
             }
             catch (Exception)
             {
-                // Un fallo del archivo no significa que SQL haya fallado.
-                // Informamos el problema sin repetir la operación.
                 return " Aviso: no se pudo escribir en la bitácora.";
             }
         }
