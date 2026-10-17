@@ -41,7 +41,8 @@ namespace Veterinaria_Web.Repositorios
 
         public List<Propietario> ConsultarTodos()
         {
-            List<Propietario> lista = new List<Propietario>();
+            List<Propietario> lista =
+                new List<Propietario>();
 
             using (SqlConnection conexion =
                 new SqlConnection(_cadenaConexion))
@@ -59,7 +60,6 @@ namespace Veterinaria_Web.Repositorios
                     using (SqlDataReader lector =
                         comando.ExecuteReader())
                     {
-                        // Lee una fila en cada repetición.
                         while (lector.Read())
                         {
                             Propietario propietario =
@@ -214,6 +214,105 @@ namespace Veterinaria_Web.Repositorios
                     return Convert.ToInt32(resultado);
                 }
             }
+        }
+
+        // =====================================================
+        // READ: CONSULTAR PROPIETARIO POR IDENTIFICADOR
+        // =====================================================
+
+        public Propietario ConsultarPorId(int idPropietario)
+        {
+            using (SqlConnection conexion =
+                new SqlConnection(_cadenaConexion))
+            {
+                using (SqlCommand comando =
+                    new SqlCommand(
+                        "sp_ConsultarPropietarioPorId",
+                        conexion))
+                {
+                    comando.CommandType =
+                        CommandType.StoredProcedure;
+
+                    // Envía el identificador al procedimiento.
+                    comando.Parameters.Add(
+                        "@ID_PROPIETARIO",
+                        SqlDbType.Int
+                    ).Value = idPropietario;
+
+                    conexion.Open();
+
+                    using (SqlDataReader lector =
+                        comando.ExecuteReader())
+                    {
+                        // La llave primaria permite encontrar
+                        // como máximo un propietario.
+                        if (lector.Read())
+                        {
+                            return new Propietario
+                            {
+                                ID_PROPIETARIO =
+                                    Convert.ToInt32(
+                                        lector["ID_PROPIETARIO"]),
+
+                                IDENTIFICACION =
+                                    Convert.ToString(
+                                        lector["IDENTIFICACION"]),
+
+                                PRIMER_NOMBRE =
+                                    Convert.ToString(
+                                        lector["PRIMER_NOMBRE"]),
+
+                                SEGUNDO_NOMBRE =
+                                    lector["SEGUNDO_NOMBRE"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToString(
+                                            lector["SEGUNDO_NOMBRE"]),
+
+                                PRIMER_APELLIDO =
+                                    Convert.ToString(
+                                        lector["PRIMER_APELLIDO"]),
+
+                                SEGUNDO_APELLIDO =
+                                    lector["SEGUNDO_APELLIDO"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToString(
+                                            lector["SEGUNDO_APELLIDO"]),
+
+                                TELEFONO =
+                                    Convert.ToString(
+                                        lector["TELEFONO"]),
+
+                                CORREO =
+                                    Convert.ToString(
+                                        lector["CORREO"]),
+
+                                FECHA_ADICION =
+                                    Convert.ToDateTime(
+                                        lector["FECHA_ADICION"]),
+
+                                ADICIONADO_POR =
+                                    Convert.ToString(
+                                        lector["ADICIONADO_POR"]),
+
+                                FECHA_MODIFICACION =
+                                    lector["FECHA_MODIFICACION"] == DBNull.Value
+                                        ? (DateTime?)null
+                                        : Convert.ToDateTime(
+                                            lector["FECHA_MODIFICACION"]),
+
+                                MODIFICADO_POR =
+                                    lector["MODIFICADO_POR"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToString(
+                                            lector["MODIFICADO_POR"])
+                            };
+                        }
+                    }
+                }
+            }
+
+            // Devuelve null cuando el identificador no existe.
+            return null;
         }
     }
 }

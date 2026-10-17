@@ -12,20 +12,23 @@ namespace Veterinaria_Web.Vistas
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Carga inicial de la lista.
             if (!IsPostBack)
             {
                 CargarPropietarios();
             }
         }
 
+        // =====================================================
+        // CONSULTAR TODOS
+        // =====================================================
+
         private void CargarPropietarios()
         {
-            PropietarioRepositorio repositorio =
-                new PropietarioRepositorio();
-
             try
             {
+                PropietarioRepositorio repositorio =
+                    new PropietarioRepositorio();
+
                 gvPropietarios.DataSource =
                     repositorio.ConsultarTodos();
 
@@ -40,10 +43,128 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
+        // =====================================================
+        // SELECCIONAR UN PROPIETARIO
+        // =====================================================
+
+        protected void gvPropietarios_SelectedIndexChanged(
+            object sender, EventArgs e)
+        {
+            // Comprueba que haya una fila con su identificador.
+            if (gvPropietarios.SelectedDataKey == null)
+            {
+                MostrarMensaje(
+                    "Seleccione un propietario de la lista.",
+                    false);
+
+                return;
+            }
+
+            try
+            {
+                // Obtiene la llave del registro, no su posición visual.
+                int idPropietario = Convert.ToInt32(
+                    gvPropietarios.SelectedDataKey.Value);
+
+                PropietarioRepositorio repositorio =
+                    new PropietarioRepositorio();
+
+                Propietario propietario =
+                    repositorio.ConsultarPorId(idPropietario);
+
+                // El registro pudo eliminarse después de cargar la lista.
+                if (propietario == null)
+                {
+                    PrepararNuevo();
+                    CargarPropietarios();
+
+                    MostrarMensaje(
+                        "El propietario seleccionado ya no existe.",
+                        false);
+
+                    return;
+                }
+
+                // Conserva el ID entre las solicitudes de esta página.
+                ViewState["ID_PROPIETARIO"] =
+                    propietario.ID_PROPIETARIO;
+
+                txtIdentificacion.Text =
+                    propietario.IDENTIFICACION;
+
+                txtPrimerNombre.Text =
+                    propietario.PRIMER_NOMBRE;
+
+                txtSegundoNombre.Text =
+                    propietario.SEGUNDO_NOMBRE ?? "";
+
+                txtPrimerApellido.Text =
+                    propietario.PRIMER_APELLIDO;
+
+                txtSegundoApellido.Text =
+                    propietario.SEGUNDO_APELLIDO ?? "";
+
+                txtTelefono.Text =
+                    propietario.TELEFONO;
+
+                txtCorreo.Text =
+                    propietario.CORREO;
+
+                // Todavía no implementamos actualizar.
+                // Evita intentar insertar nuevamente este propietario.
+                btnGuardar.Enabled = false;
+
+                MostrarMensaje(
+                    "Propietario seleccionado. ID: " +
+                    propietario.ID_PROPIETARIO +
+                    ". Para crear otro, pulse Nuevo propietario.",
+                    true);
+            }
+            catch (Exception ex)
+            {
+                MostrarMensaje(
+                    "No se pudo cargar el propietario: " +
+                    ex.Message,
+                    false);
+            }
+        }
+
+        // =====================================================
+        // PREPARAR UN REGISTRO NUEVO
+        // =====================================================
+
+        protected void btnNuevo_Click(object sender, EventArgs e)
+        {
+            PrepararNuevo();
+            lblMensaje.Text = "";
+        }
+
+        private void PrepararNuevo()
+        {
+            ViewState.Remove("ID_PROPIETARIO");
+            gvPropietarios.SelectedIndex = -1;
+            btnGuardar.Enabled = true;
+
+            LimpiarCampos();
+        }
+
+        // =====================================================
+        // CREAR PROPIETARIO
+        // =====================================================
+
         protected void btnGuardar_Click(
             object sender, EventArgs e)
         {
-            // Valida antes de enviar los datos a SQL Server.
+            // Comprueba también en el servidor el modo del formulario.
+            if (ViewState["ID_PROPIETARIO"] != null)
+            {
+                MostrarMensaje(
+                    "Pulse Nuevo propietario antes de crear otro registro.",
+                    false);
+
+                return;
+            }
+
             if (!ValidarDatos())
             {
                 return;
@@ -70,7 +191,7 @@ namespace Veterinaria_Web.Vistas
 
                 int idGenerado = repositorio.Crear(propietario);
 
-                LimpiarCampos();
+                PrepararNuevo();
 
                 MostrarMensaje(
                     "Propietario guardado correctamente. ID: " +
@@ -81,7 +202,6 @@ namespace Veterinaria_Web.Vistas
             }
             catch (SqlException ex)
             {
-                // SQL Server usa estos códigos para valores duplicados.
                 if (ex.Number == 2601 || ex.Number == 2627)
                 {
                     MostrarMensaje(
@@ -105,6 +225,10 @@ namespace Veterinaria_Web.Vistas
             }
         }
 
+        // =====================================================
+        // VALIDAR LOS DATOS DEL FORMULARIO
+        // =====================================================
+
         private bool ValidarDatos()
         {
             if (string.IsNullOrWhiteSpace(txtIdentificacion.Text) ||
@@ -121,7 +245,6 @@ namespace Veterinaria_Web.Vistas
                 return false;
             }
 
-            // Verifica los tamaños también en el servidor.
             if (txtIdentificacion.Text.Trim().Length > 15 ||
                 txtPrimerNombre.Text.Trim().Length > 25 ||
                 txtSegundoNombre.Text.Trim().Length > 25 ||
@@ -136,7 +259,6 @@ namespace Veterinaria_Web.Vistas
                 return false;
             }
 
-            // Acepta exactamente ocho dígitos del 0 al 9.
             if (!Regex.IsMatch(
                 txtTelefono.Text.Trim(), @"\A[0-9]{8}\z"))
             {
@@ -172,6 +294,10 @@ namespace Veterinaria_Web.Vistas
 
             return true;
         }
+
+        // =====================================================
+        // LIMPIAR CAMPOS Y MOSTRAR MENSAJES
+        // =====================================================
 
         private void LimpiarCampos()
         {

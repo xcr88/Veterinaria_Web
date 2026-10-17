@@ -14,8 +14,7 @@
         <div>
             <h1>Mantenimiento de propietarios</h1>
 
-            <%-- Campos para registrar un propietario. --%>
-            <h2>Agregar propietario</h2>
+            <h2>Datos del propietario</h2>
 
             <asp:Label
                 runat="server"
@@ -94,16 +93,23 @@
                 MaxLength="150" />
             <br /><br />
 
-            <%-- Ejecuta el método de guardado del archivo C#. --%>
+            <%-- Crea un propietario nuevo. --%>
             <asp:Button
                 ID="btnGuardar"
                 runat="server"
                 Text="Guardar propietario"
                 OnClick="btnGuardar_Click" />
 
+            <%-- Limpia la selección y prepara otro registro. --%>
+            <asp:Button
+                ID="btnNuevo"
+                runat="server"
+                Text="Nuevo propietario"
+                CausesValidation="False"
+                OnClick="btnNuevo_Click" />
+
             <br /><br />
 
-            <%-- Muestra el resultado del guardado o la consulta. --%>
             <asp:Label
                 ID="lblMensaje"
                 runat="server" />
@@ -112,14 +118,23 @@
 
             <h2>Propietarios registrados</h2>
 
+            <%-- El evento carga los datos de la fila seleccionada. --%>
             <asp:GridView
                 ID="gvPropietarios"
                 runat="server"
                 AutoGenerateColumns="False"
                 DataKeyNames="ID_PROPIETARIO"
-                EmptyDataText="No hay propietarios registrados.">
+                EmptyDataText="No hay propietarios registrados."
+                OnSelectedIndexChanged="gvPropietarios_SelectedIndexChanged">
+
+                <SelectedRowStyle BackColor="LightYellow" />
 
                 <Columns>
+                    <asp:CommandField
+                        ShowSelectButton="True"
+                        SelectText="Seleccionar"
+                        CausesValidation="False" />
+
                     <asp:BoundField
                         DataField="ID_PROPIETARIO"
                         HeaderText="ID" />
