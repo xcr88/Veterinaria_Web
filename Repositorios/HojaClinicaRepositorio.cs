@@ -95,6 +95,66 @@ namespace Veterinaria_Web.Repositorios
         }
 
         // =====================================================
+        // CREATE: CREAR HOJA CLÍNICA
+        // =====================================================
+
+        public int Crear(HojaClinica hoja)
+        {
+            using (SqlConnection conexion =
+                new SqlConnection(_cadenaConexion))
+            {
+                using (SqlCommand comando =
+                    new SqlCommand(
+                        "sp_CrearHojaClinica",
+                        conexion))
+                {
+                    comando.CommandType =
+                        CommandType.StoredProcedure;
+
+                    comando.Parameters.Add(
+                        "@FECHA_ATENCION",
+                        SqlDbType.Date
+                    ).Value = hoja.FECHA_ATENCION.Date;
+
+                    comando.Parameters.Add(
+                        "@SINTOMAS",
+                        SqlDbType.NVarChar,
+                        150
+                    ).Value = hoja.SINTOMAS;
+
+                    comando.Parameters.Add(
+                        "@DIAGNOSTICO",
+                        SqlDbType.NVarChar,
+                        150
+                    ).Value = hoja.DIAGNOSTICO;
+
+                    comando.Parameters.Add(
+                        "@TRATAMIENTO",
+                        SqlDbType.NVarChar,
+                        150
+                    ).Value = hoja.TRATAMIENTO;
+
+                    comando.Parameters.Add(
+                        "@ID_MASCOTA",
+                        SqlDbType.Int
+                    ).Value = hoja.ID_MASCOTA;
+
+                    comando.Parameters.Add(
+                        "@ADICIONADO_POR",
+                        SqlDbType.NVarChar,
+                        50
+                    ).Value = hoja.ADICIONADO_POR;
+
+                    conexion.Open();
+
+                    // Obtiene el ID generado por el procedimiento.
+                    return Convert.ToInt32(
+                        comando.ExecuteScalar());
+                }
+            }
+        }
+
+        // =====================================================
         // AUXILIAR: CONVERTIR UNA FILA SQL EN UNA HOJA CLÍNICA
         // =====================================================
 

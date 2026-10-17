@@ -14,9 +14,7 @@
         <div>
             <h1>Mantenimiento de hojas clínicas</h1>
 
-            <asp:Label
-                ID="lblUsuario"
-                runat="server" />
+            <asp:Label ID="lblUsuario" runat="server" />
 
             <br /><br />
 
@@ -42,11 +40,81 @@
                 Text="Cerrar sesión"
                 NavigateUrl="~/Vistas/CerrarSesion.aspx" />
 
+            <h2>Registrar atención</h2>
+
+            <asp:Label runat="server"
+                AssociatedControlID="ddlMascota"
+                Text="Mascota:" />
+            <br />
+            <asp:DropDownList
+                ID="ddlMascota"
+                runat="server" />
             <br /><br />
 
-            <asp:Label
-                ID="lblMensaje"
-                runat="server" />
+            <asp:Label runat="server"
+                AssociatedControlID="txtFechaAtencion"
+                Text="Fecha de atención:" />
+            <br />
+            <asp:TextBox
+                ID="txtFechaAtencion"
+                runat="server"
+                TextMode="Date" />
+            <br /><br />
+
+            <asp:Label runat="server"
+                AssociatedControlID="txtSintomas"
+                Text="Síntomas:" />
+            <br />
+            <asp:TextBox
+                ID="txtSintomas"
+                runat="server"
+                TextMode="MultiLine"
+                Rows="3"
+                MaxLength="150" />
+            <br /><br />
+
+            <asp:Label runat="server"
+                AssociatedControlID="txtDiagnostico"
+                Text="Diagnóstico:" />
+            <br />
+            <asp:TextBox
+                ID="txtDiagnostico"
+                runat="server"
+                TextMode="MultiLine"
+                Rows="3"
+                MaxLength="150" />
+            <br /><br />
+
+            <asp:Label runat="server"
+                AssociatedControlID="txtTratamiento"
+                Text="Tratamiento:" />
+            <br />
+            <asp:TextBox
+                ID="txtTratamiento"
+                runat="server"
+                TextMode="MultiLine"
+                Rows="3"
+                MaxLength="150" />
+            <br /><br />
+
+            <asp:Button
+                ID="btnGuardar"
+                runat="server"
+                Text="Guardar atención"
+                OnClick="btnGuardar_Click" />
+
+            <asp:Button
+                ID="btnNueva"
+                runat="server"
+                Text="Nueva atención"
+                CausesValidation="False"
+                OnClick="btnNueva_Click" />
+
+            <br /><br />
+
+            <asp:Label ID="lblMensaje" runat="server" />
+
+            <hr />
 
             <h2>Atenciones registradas</h2>
 
