@@ -27,6 +27,14 @@
             &nbsp;|&nbsp;
 
             <asp:HyperLink
+                ID="lnkHojasClinicas"
+                runat="server"
+                Text="Ir a hojas clínicas"
+                NavigateUrl="~/Vistas/MantenimientoHojasClinicas.aspx" />
+
+            &nbsp;|&nbsp;
+
+            <asp:HyperLink
                 ID="lnkCerrarSesion"
                 runat="server"
                 Text="Cerrar sesión"
@@ -104,7 +112,6 @@
                 Enabled="False"
                 OnClick="btnActualizar_Click" />
 
-            <%-- Confirma antes de enviar la eliminación al servidor. --%>
             <asp:Button
                 ID="btnEliminar"
                 runat="server"

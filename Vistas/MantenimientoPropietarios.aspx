@@ -14,7 +14,22 @@
         <div>
             <h1>Mantenimiento de propietarios</h1>
 
-            <%-- Abre la página para confirmar la salida. --%>
+            <asp:HyperLink
+                ID="lnkMascotas"
+                runat="server"
+                Text="Ir a mascotas"
+                NavigateUrl="~/Vistas/MantenimientoMascotas.aspx" />
+
+            &nbsp;|&nbsp;
+
+            <asp:HyperLink
+                ID="lnkHojasClinicas"
+                runat="server"
+                Text="Ir a hojas clínicas"
+                NavigateUrl="~/Vistas/MantenimientoHojasClinicas.aspx" />
+
+            &nbsp;|&nbsp;
+
             <asp:HyperLink
                 ID="lnkCerrarSesion"
                 runat="server"
@@ -94,7 +109,6 @@
                 Enabled="False"
                 OnClick="btnActualizar_Click" />
 
-            <%-- Solicita confirmación antes de eliminar. --%>
             <asp:Button
                 ID="btnEliminar"
                 runat="server"
