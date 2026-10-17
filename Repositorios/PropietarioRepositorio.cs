@@ -9,7 +9,6 @@ namespace Veterinaria_Web.Repositorios
 {
     public class PropietarioRepositorio
     {
-        // Guarda la cadena de conexión obtenida de Web.config.
         private readonly string _cadenaConexion;
 
         public PropietarioRepositorio()
@@ -29,13 +28,12 @@ namespace Veterinaria_Web.Repositorios
                 new SqlConnection(_cadenaConexion))
             {
                 conexion.Open();
-
                 return true;
             }
         }
 
         // =====================================================
-        // READ: CONSULTAR TODOS LOS PROPIETARIOS
+        // READ: CONSULTAR TODOS
         // =====================================================
 
         public List<Propietario> ConsultarTodos()
@@ -61,67 +59,7 @@ namespace Veterinaria_Web.Repositorios
                     {
                         while (lector.Read())
                         {
-                            Propietario propietario =
-                                new Propietario
-                                {
-                                    ID_PROPIETARIO =
-                                        Convert.ToInt32(
-                                            lector["ID_PROPIETARIO"]),
-
-                                    IDENTIFICACION =
-                                        Convert.ToString(
-                                            lector["IDENTIFICACION"]),
-
-                                    PRIMER_NOMBRE =
-                                        Convert.ToString(
-                                            lector["PRIMER_NOMBRE"]),
-
-                                    SEGUNDO_NOMBRE =
-                                        lector["SEGUNDO_NOMBRE"] == DBNull.Value
-                                            ? null
-                                            : Convert.ToString(
-                                                lector["SEGUNDO_NOMBRE"]),
-
-                                    PRIMER_APELLIDO =
-                                        Convert.ToString(
-                                            lector["PRIMER_APELLIDO"]),
-
-                                    SEGUNDO_APELLIDO =
-                                        lector["SEGUNDO_APELLIDO"] == DBNull.Value
-                                            ? null
-                                            : Convert.ToString(
-                                                lector["SEGUNDO_APELLIDO"]),
-
-                                    TELEFONO =
-                                        Convert.ToString(
-                                            lector["TELEFONO"]),
-
-                                    CORREO =
-                                        Convert.ToString(
-                                            lector["CORREO"]),
-
-                                    FECHA_ADICION =
-                                        Convert.ToDateTime(
-                                            lector["FECHA_ADICION"]),
-
-                                    ADICIONADO_POR =
-                                        Convert.ToString(
-                                            lector["ADICIONADO_POR"]),
-
-                                    FECHA_MODIFICACION =
-                                        lector["FECHA_MODIFICACION"] == DBNull.Value
-                                            ? (DateTime?)null
-                                            : Convert.ToDateTime(
-                                                lector["FECHA_MODIFICACION"]),
-
-                                    MODIFICADO_POR =
-                                        lector["MODIFICADO_POR"] == DBNull.Value
-                                            ? null
-                                            : Convert.ToString(
-                                                lector["MODIFICADO_POR"])
-                                };
-
-                            lista.Add(propietario);
+                            lista.Add(MapearPropietario(lector));
                         }
                     }
                 }
@@ -131,7 +69,7 @@ namespace Veterinaria_Web.Repositorios
         }
 
         // =====================================================
-        // READ: CONSULTAR PROPIETARIO POR IDENTIFICADOR
+        // READ: CONSULTAR POR IDENTIFICADOR
         // =====================================================
 
         public Propietario ConsultarPorId(int idPropietario)
@@ -159,70 +97,12 @@ namespace Veterinaria_Web.Repositorios
                     {
                         if (lector.Read())
                         {
-                            return new Propietario
-                            {
-                                ID_PROPIETARIO =
-                                    Convert.ToInt32(
-                                        lector["ID_PROPIETARIO"]),
-
-                                IDENTIFICACION =
-                                    Convert.ToString(
-                                        lector["IDENTIFICACION"]),
-
-                                PRIMER_NOMBRE =
-                                    Convert.ToString(
-                                        lector["PRIMER_NOMBRE"]),
-
-                                SEGUNDO_NOMBRE =
-                                    lector["SEGUNDO_NOMBRE"] == DBNull.Value
-                                        ? null
-                                        : Convert.ToString(
-                                            lector["SEGUNDO_NOMBRE"]),
-
-                                PRIMER_APELLIDO =
-                                    Convert.ToString(
-                                        lector["PRIMER_APELLIDO"]),
-
-                                SEGUNDO_APELLIDO =
-                                    lector["SEGUNDO_APELLIDO"] == DBNull.Value
-                                        ? null
-                                        : Convert.ToString(
-                                            lector["SEGUNDO_APELLIDO"]),
-
-                                TELEFONO =
-                                    Convert.ToString(
-                                        lector["TELEFONO"]),
-
-                                CORREO =
-                                    Convert.ToString(
-                                        lector["CORREO"]),
-
-                                FECHA_ADICION =
-                                    Convert.ToDateTime(
-                                        lector["FECHA_ADICION"]),
-
-                                ADICIONADO_POR =
-                                    Convert.ToString(
-                                        lector["ADICIONADO_POR"]),
-
-                                FECHA_MODIFICACION =
-                                    lector["FECHA_MODIFICACION"] == DBNull.Value
-                                        ? (DateTime?)null
-                                        : Convert.ToDateTime(
-                                            lector["FECHA_MODIFICACION"]),
-
-                                MODIFICADO_POR =
-                                    lector["MODIFICADO_POR"] == DBNull.Value
-                                        ? null
-                                        : Convert.ToString(
-                                            lector["MODIFICADO_POR"])
-                            };
+                            return MapearPropietario(lector);
                         }
                     }
                 }
             }
 
-            // El identificador no existe.
             return null;
         }
 
@@ -243,55 +123,7 @@ namespace Veterinaria_Web.Repositorios
                     comando.CommandType =
                         CommandType.StoredProcedure;
 
-                    comando.Parameters.Add(
-                        "@IDENTIFICACION",
-                        SqlDbType.NVarChar,
-                        15
-                    ).Value = propietario.IDENTIFICACION;
-
-                    comando.Parameters.Add(
-                        "@PRIMER_NOMBRE",
-                        SqlDbType.NVarChar,
-                        25
-                    ).Value = propietario.PRIMER_NOMBRE;
-
-                    comando.Parameters.Add(
-                        "@SEGUNDO_NOMBRE",
-                        SqlDbType.NVarChar,
-                        25
-                    ).Value =
-                        string.IsNullOrWhiteSpace(
-                            propietario.SEGUNDO_NOMBRE)
-                            ? (object)DBNull.Value
-                            : propietario.SEGUNDO_NOMBRE;
-
-                    comando.Parameters.Add(
-                        "@PRIMER_APELLIDO",
-                        SqlDbType.NVarChar,
-                        25
-                    ).Value = propietario.PRIMER_APELLIDO;
-
-                    comando.Parameters.Add(
-                        "@SEGUNDO_APELLIDO",
-                        SqlDbType.NVarChar,
-                        25
-                    ).Value =
-                        string.IsNullOrWhiteSpace(
-                            propietario.SEGUNDO_APELLIDO)
-                            ? (object)DBNull.Value
-                            : propietario.SEGUNDO_APELLIDO;
-
-                    comando.Parameters.Add(
-                        "@TELEFONO",
-                        SqlDbType.NVarChar,
-                        8
-                    ).Value = propietario.TELEFONO;
-
-                    comando.Parameters.Add(
-                        "@CORREO",
-                        SqlDbType.NVarChar,
-                        150
-                    ).Value = propietario.CORREO;
+                    AgregarDatos(comando, propietario);
 
                     comando.Parameters.Add(
                         "@ADICIONADO_POR",
@@ -301,10 +133,8 @@ namespace Veterinaria_Web.Repositorios
 
                     conexion.Open();
 
-                    // Obtiene el ID generado por el procedimiento.
-                    object resultado = comando.ExecuteScalar();
-
-                    return Convert.ToInt32(resultado);
+                    return Convert.ToInt32(
+                        comando.ExecuteScalar());
                 }
             }
         }
@@ -331,55 +161,7 @@ namespace Veterinaria_Web.Repositorios
                         SqlDbType.Int
                     ).Value = propietario.ID_PROPIETARIO;
 
-                    comando.Parameters.Add(
-                        "@IDENTIFICACION",
-                        SqlDbType.NVarChar,
-                        15
-                    ).Value = propietario.IDENTIFICACION;
-
-                    comando.Parameters.Add(
-                        "@PRIMER_NOMBRE",
-                        SqlDbType.NVarChar,
-                        25
-                    ).Value = propietario.PRIMER_NOMBRE;
-
-                    comando.Parameters.Add(
-                        "@SEGUNDO_NOMBRE",
-                        SqlDbType.NVarChar,
-                        25
-                    ).Value =
-                        string.IsNullOrWhiteSpace(
-                            propietario.SEGUNDO_NOMBRE)
-                            ? (object)DBNull.Value
-                            : propietario.SEGUNDO_NOMBRE;
-
-                    comando.Parameters.Add(
-                        "@PRIMER_APELLIDO",
-                        SqlDbType.NVarChar,
-                        25
-                    ).Value = propietario.PRIMER_APELLIDO;
-
-                    comando.Parameters.Add(
-                        "@SEGUNDO_APELLIDO",
-                        SqlDbType.NVarChar,
-                        25
-                    ).Value =
-                        string.IsNullOrWhiteSpace(
-                            propietario.SEGUNDO_APELLIDO)
-                            ? (object)DBNull.Value
-                            : propietario.SEGUNDO_APELLIDO;
-
-                    comando.Parameters.Add(
-                        "@TELEFONO",
-                        SqlDbType.NVarChar,
-                        8
-                    ).Value = propietario.TELEFONO;
-
-                    comando.Parameters.Add(
-                        "@CORREO",
-                        SqlDbType.NVarChar,
-                        150
-                    ).Value = propietario.CORREO;
+                    AgregarDatos(comando, propietario);
 
                     comando.Parameters.Add(
                         "@MODIFICADO_POR",
@@ -389,13 +171,159 @@ namespace Veterinaria_Web.Repositorios
 
                     conexion.Open();
 
-                    // Lee el SELECT @@ROWCOUNT del procedimiento.
                     int filasAfectadas =
                         Convert.ToInt32(comando.ExecuteScalar());
 
                     return filasAfectadas > 0;
                 }
             }
+        }
+
+        // =====================================================
+        // DELETE: ELIMINAR PROPIETARIO
+        // =====================================================
+
+        public bool Eliminar(int idPropietario)
+        {
+            using (SqlConnection conexion =
+                new SqlConnection(_cadenaConexion))
+            {
+                using (SqlCommand comando =
+                    new SqlCommand(
+                        "sp_EliminarPropietario",
+                        conexion))
+                {
+                    comando.CommandType =
+                        CommandType.StoredProcedure;
+
+                    comando.Parameters.Add(
+                        "@ID_PROPIETARIO",
+                        SqlDbType.Int
+                    ).Value = idPropietario;
+
+                    conexion.Open();
+
+                    // Lee FILAS_AFECTADAS del procedimiento.
+                    int filasAfectadas =
+                        Convert.ToInt32(comando.ExecuteScalar());
+
+                    return filasAfectadas > 0;
+                }
+            }
+        }
+
+        // =====================================================
+        // AUXILIAR: PARÁMETROS COMUNES DE CREAR Y ACTUALIZAR
+        // =====================================================
+
+        private void AgregarDatos(
+            SqlCommand comando,
+            Propietario propietario)
+        {
+            comando.Parameters.Add(
+                "@IDENTIFICACION",
+                SqlDbType.NVarChar,
+                15
+            ).Value = propietario.IDENTIFICACION;
+
+            comando.Parameters.Add(
+                "@PRIMER_NOMBRE",
+                SqlDbType.NVarChar,
+                25
+            ).Value = propietario.PRIMER_NOMBRE;
+
+            comando.Parameters.Add(
+                "@SEGUNDO_NOMBRE",
+                SqlDbType.NVarChar,
+                25
+            ).Value =
+                string.IsNullOrWhiteSpace(
+                    propietario.SEGUNDO_NOMBRE)
+                    ? (object)DBNull.Value
+                    : propietario.SEGUNDO_NOMBRE;
+
+            comando.Parameters.Add(
+                "@PRIMER_APELLIDO",
+                SqlDbType.NVarChar,
+                25
+            ).Value = propietario.PRIMER_APELLIDO;
+
+            comando.Parameters.Add(
+                "@SEGUNDO_APELLIDO",
+                SqlDbType.NVarChar,
+                25
+            ).Value =
+                string.IsNullOrWhiteSpace(
+                    propietario.SEGUNDO_APELLIDO)
+                    ? (object)DBNull.Value
+                    : propietario.SEGUNDO_APELLIDO;
+
+            comando.Parameters.Add(
+                "@TELEFONO",
+                SqlDbType.NVarChar,
+                8
+            ).Value = propietario.TELEFONO;
+
+            comando.Parameters.Add(
+                "@CORREO",
+                SqlDbType.NVarChar,
+                150
+            ).Value = propietario.CORREO;
+        }
+
+        // =====================================================
+        // AUXILIAR: CONVERTIR UNA FILA SQL EN UN PROPIETARIO
+        // =====================================================
+
+        private Propietario MapearPropietario(SqlDataReader lector)
+        {
+            return new Propietario
+            {
+                ID_PROPIETARIO =
+                    Convert.ToInt32(lector["ID_PROPIETARIO"]),
+
+                IDENTIFICACION =
+                    Convert.ToString(lector["IDENTIFICACION"]),
+
+                PRIMER_NOMBRE =
+                    Convert.ToString(lector["PRIMER_NOMBRE"]),
+
+                SEGUNDO_NOMBRE =
+                    lector["SEGUNDO_NOMBRE"] == DBNull.Value
+                        ? null
+                        : Convert.ToString(lector["SEGUNDO_NOMBRE"]),
+
+                PRIMER_APELLIDO =
+                    Convert.ToString(lector["PRIMER_APELLIDO"]),
+
+                SEGUNDO_APELLIDO =
+                    lector["SEGUNDO_APELLIDO"] == DBNull.Value
+                        ? null
+                        : Convert.ToString(lector["SEGUNDO_APELLIDO"]),
+
+                TELEFONO =
+                    Convert.ToString(lector["TELEFONO"]),
+
+                CORREO =
+                    Convert.ToString(lector["CORREO"]),
+
+                FECHA_ADICION =
+                    Convert.ToDateTime(lector["FECHA_ADICION"]),
+
+                ADICIONADO_POR =
+                    Convert.ToString(lector["ADICIONADO_POR"]),
+
+                FECHA_MODIFICACION =
+                    lector["FECHA_MODIFICACION"] == DBNull.Value
+                        ? (DateTime?)null
+                        : Convert.ToDateTime(
+                            lector["FECHA_MODIFICACION"]),
+
+                MODIFICADO_POR =
+                    lector["MODIFICADO_POR"] == DBNull.Value
+                        ? null
+                        : Convert.ToString(lector["MODIFICADO_POR"])
+            };
         }
     }
 }

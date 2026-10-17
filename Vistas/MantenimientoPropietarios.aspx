@@ -16,91 +16,68 @@
 
             <h2>Datos del propietario</h2>
 
-            <asp:Label
-                runat="server"
+            <asp:Label runat="server"
                 AssociatedControlID="txtIdentificacion"
                 Text="Identificación:" />
             <br />
-            <asp:TextBox
-                ID="txtIdentificacion"
-                runat="server"
-                MaxLength="15" />
+            <asp:TextBox ID="txtIdentificacion"
+                runat="server" MaxLength="15" />
             <br /><br />
 
-            <asp:Label
-                runat="server"
+            <asp:Label runat="server"
                 AssociatedControlID="txtPrimerNombre"
                 Text="Primer nombre:" />
             <br />
-            <asp:TextBox
-                ID="txtPrimerNombre"
-                runat="server"
-                MaxLength="25" />
+            <asp:TextBox ID="txtPrimerNombre"
+                runat="server" MaxLength="25" />
             <br /><br />
 
-            <asp:Label
-                runat="server"
+            <asp:Label runat="server"
                 AssociatedControlID="txtSegundoNombre"
                 Text="Segundo nombre (opcional):" />
             <br />
-            <asp:TextBox
-                ID="txtSegundoNombre"
-                runat="server"
-                MaxLength="25" />
+            <asp:TextBox ID="txtSegundoNombre"
+                runat="server" MaxLength="25" />
             <br /><br />
 
-            <asp:Label
-                runat="server"
+            <asp:Label runat="server"
                 AssociatedControlID="txtPrimerApellido"
                 Text="Primer apellido:" />
             <br />
-            <asp:TextBox
-                ID="txtPrimerApellido"
-                runat="server"
-                MaxLength="25" />
+            <asp:TextBox ID="txtPrimerApellido"
+                runat="server" MaxLength="25" />
             <br /><br />
 
-            <asp:Label
-                runat="server"
+            <asp:Label runat="server"
                 AssociatedControlID="txtSegundoApellido"
                 Text="Segundo apellido (opcional):" />
             <br />
-            <asp:TextBox
-                ID="txtSegundoApellido"
-                runat="server"
-                MaxLength="25" />
+            <asp:TextBox ID="txtSegundoApellido"
+                runat="server" MaxLength="25" />
             <br /><br />
 
-            <asp:Label
-                runat="server"
+            <asp:Label runat="server"
                 AssociatedControlID="txtTelefono"
                 Text="Teléfono:" />
             <br />
-            <asp:TextBox
-                ID="txtTelefono"
-                runat="server"
-                MaxLength="8" />
+            <asp:TextBox ID="txtTelefono"
+                runat="server" MaxLength="8" />
             <br /><br />
 
-            <asp:Label
-                runat="server"
+            <asp:Label runat="server"
                 AssociatedControlID="txtCorreo"
                 Text="Correo electrónico:" />
             <br />
-            <asp:TextBox
-                ID="txtCorreo"
-                runat="server"
-                MaxLength="150" />
+            <asp:TextBox ID="txtCorreo"
+                runat="server" MaxLength="150" />
             <br /><br />
 
-            <%-- Disponible cuando se prepara un registro nuevo. --%>
             <asp:Button
                 ID="btnGuardar"
                 runat="server"
                 Text="Guardar propietario"
                 OnClick="btnGuardar_Click" />
 
-            <%-- Se habilita al seleccionar un propietario. --%>
             <asp:Button
                 ID="btnActualizar"
                 runat="server"
@@ -108,7 +85,16 @@
                 Enabled="False"
                 OnClick="btnActualizar_Click" />
 
-            <%-- Limpia el formulario y cancela la selección. --%>
+            <%-- Solicita confirmación antes de enviar la eliminación. --%>
+            <asp:Button
+                ID="btnEliminar"
+                runat="server"
+                Text="Eliminar propietario"
+                Enabled="False"
+                CausesValidation="False"
+                OnClientClick="return confirm('¿Desea eliminar este propietario? Esta acción no se puede deshacer.');"
+                OnClick="btnEliminar_Click" />
+
             <asp:Button
                 ID="btnNuevo"
                 runat="server"
@@ -118,9 +104,7 @@
 
             <br /><br />
 
-            <asp:Label
-                ID="lblMensaje"
-                runat="server" />
+            <asp:Label ID="lblMensaje" runat="server" />
 
             <hr />
 

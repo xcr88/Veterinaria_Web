@@ -45,7 +45,7 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
-        // SELECCIONAR UN PROPIETARIO
+        // SELECCIONAR
         // =====================================================
 
         protected void gvPropietarios_SelectedIndexChanged(
@@ -83,7 +83,7 @@ namespace Veterinaria_Web.Vistas
                     return;
                 }
 
-                // Conserva el identificador para la actualización.
+                // Guarda el ID para actualizar o eliminar.
                 ViewState["ID_PROPIETARIO"] =
                     propietario.ID_PROPIETARIO;
 
@@ -108,19 +108,17 @@ namespace Veterinaria_Web.Vistas
                 txtCorreo.Text =
                     propietario.CORREO;
 
-                // Cambia el formulario al modo de edición.
                 btnGuardar.Enabled = false;
                 btnActualizar.Enabled = true;
+                btnEliminar.Enabled = true;
 
                 MostrarMensaje(
                     "Propietario seleccionado. ID: " +
-                    propietario.ID_PROPIETARIO +
-                    ". Modifique los datos y pulse Actualizar propietario.",
+                    propietario.ID_PROPIETARIO,
                     true);
             }
             catch (Exception ex)
             {
-                // Evita conservar una selección anterior si falla la carga.
                 PrepararNuevo();
 
                 MostrarMensaje(
@@ -147,12 +145,13 @@ namespace Veterinaria_Web.Vistas
 
             btnGuardar.Enabled = true;
             btnActualizar.Enabled = false;
+            btnEliminar.Enabled = false;
 
             LimpiarCampos();
         }
 
         // =====================================================
-        // CREAR PROPIETARIO
+        // CREAR
         // =====================================================
 
         protected void btnGuardar_Click(
@@ -207,23 +206,21 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
-        // ACTUALIZAR PROPIETARIO
+        // ACTUALIZAR
         // =====================================================
 
         protected void btnActualizar_Click(
             object sender, EventArgs e)
         {
-            // No permite actualizar sin un registro seleccionado.
             if (ViewState["ID_PROPIETARIO"] == null)
             {
                 MostrarMensaje(
-                    "Primero seleccione un propietario de la lista.",
+                    "Primero seleccione un propietario.",
                     false);
 
                 return;
             }
 
-            // Reutiliza las mismas validaciones de creación.
             if (!ValidarDatos())
             {
                 return;
@@ -252,7 +249,7 @@ namespace Veterinaria_Web.Vistas
                     CargarPropietarios();
 
                     MostrarMensaje(
-                        "No se actualizó el registro porque ya no existe.",
+                        "No se actualizó porque el registro ya no existe.",
                         false);
 
                     return;
@@ -283,12 +280,74 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
+        // ELIMINAR
+        // =====================================================
+
+        protected void btnEliminar_Click(
+            object sender, EventArgs e)
+        {
+            // Valida la selección también en el servidor.
+            if (ViewState["ID_PROPIETARIO"] == null)
+            {
+                MostrarMensaje(
+                    "Primero seleccione un propietario.",
+                    false);
+
+                return;
+            }
+
+            try
+            {
+                // Usa el ID seleccionado, no los textos del formulario.
+                int idPropietario = Convert.ToInt32(
+                    ViewState["ID_PROPIETARIO"]);
+
+                PropietarioRepositorio repositorio =
+                    new PropietarioRepositorio();
+
+                bool eliminado =
+                    repositorio.Eliminar(idPropietario);
+
+                PrepararNuevo();
+
+                MostrarMensaje(
+                    eliminado
+                        ? "Propietario eliminado correctamente."
+                        : "No se eliminó porque el registro ya no existe.",
+                    eliminado);
+
+                CargarPropietarios();
+            }
+            catch (SqlException ex)
+            {
+                if (ex.Number == 547)
+                {
+                    // La llave foránea protege las mascotas relacionadas.
+                    MostrarMensaje(
+                        "No se puede eliminar este propietario " +
+                        "porque tiene mascotas registradas.",
+                        false);
+                }
+                else
+                {
+                    MostrarErrorSql(ex);
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarMensaje(
+                    "No se pudo eliminar el propietario: " +
+                    ex.Message,
+                    false);
+            }
+        }
+
+        // =====================================================
         // LEER LOS DATOS DEL FORMULARIO
         // =====================================================
 
         private Propietario LeerFormulario()
         {
-            // Se utiliza tanto para crear como para actualizar.
             return new Propietario
             {
                 IDENTIFICACION = txtIdentificacion.Text.Trim(),
@@ -302,7 +361,7 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
-        // VALIDAR LOS DATOS DEL FORMULARIO
+        // VALIDAR LOS DATOS
         // =====================================================
 
         private bool ValidarDatos()
@@ -387,7 +446,7 @@ namespace Veterinaria_Web.Vistas
         }
 
         // =====================================================
-        // MOSTRAR MENSAJES Y ERRORES
+        // MENSAJES Y ERRORES
         // =====================================================
 
         private void MostrarErrorSql(SqlException ex)
